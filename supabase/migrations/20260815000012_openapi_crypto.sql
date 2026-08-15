@@ -249,7 +249,7 @@ begin
       raise exception 'No wallet for % — nothing to sell', p_asset;
     end if;
     insert into public.crypto_wallets (tenant_id, account_id, asset, balance, address)
-    values (v_tenant, p_account_id, upper(p_asset), 0, '0x' || encode(gen_random_bytes(20), 'hex'));
+    values (v_tenant, p_account_id, upper(p_asset), 0, '0x' || encode(extensions.gen_random_bytes(20), 'hex'));
     select * into v_wallet from public.crypto_wallets
     where account_id = p_account_id and asset = upper(p_asset);
   end if;
