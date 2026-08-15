@@ -45,12 +45,12 @@ export default async function StatementsPage() {
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <Button asChild variant="outline">
-                    <a href={`/api/statements/${account.id}?format=pdf`}>
+                    <a href={`/app/api/statements/${account.id}?format=pdf`}>
                       <FileDown className="size-4" /> PDF
                     </a>
                   </Button>
                   <Button asChild variant="outline">
-                    <a href={`/api/statements/${account.id}?format=csv`}>
+                    <a href={`/app/api/statements/${account.id}?format=csv`}>
                       <FileText className="size-4" /> CSV
                     </a>
                   </Button>

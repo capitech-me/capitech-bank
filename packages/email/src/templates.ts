@@ -20,7 +20,7 @@ export function welcomeEmail(opts: { firstName: string; lastName?: string }): st
         <li style="margin-bottom:8px;">Open your first multi-currency account — it takes seconds.</li>
         <li style="margin-bottom:8px;">Create a virtual card and start spending online.</li>
       </ol>
-      ${ctaButton("https://app.capitech.me/onboarding", "Continue onboarding")}
+      ${ctaButton("https://online.capitech.me/app/onboarding", "Continue onboarding")}
       <p style="margin:0;color:#64748b;font-size:13px;">Questions? Our support team is here 24/7 at <a href="mailto:support@capitech.me" style="color:#2557eb;">support@capitech.me</a>.</p>
     `,
   });
@@ -73,7 +73,7 @@ export function kycEmail(opts: {
     preheader: "An update on your identity verification.",
     bodyHtml: `
       ${kycBody(opts.status, opts.firstName, copy[opts.status])}
-      ${opts.status === "approved" ? "" : ctaButton("https://app.capitech.me/profile", "Go to verification")}
+      ${opts.status === "approved" ? "" : ctaButton("https://online.capitech.me/app/profile", "Go to verification")}
       <p style="margin:0;color:#64748b;font-size:13px;">If you have any questions, contact <a href="mailto:support@capitech.me" style="color:#2557eb;">support@capitech.me</a>.</p>
     `,
   });
@@ -104,7 +104,7 @@ export function transferEmail(opts: {
         <tr>${kvRow("Counterparty", opts.counterparty)}</tr>
         <tr>${kvRow("Reference", opts.reference)}</tr>
       </table>
-      ${ctaButton("https://app.capitech.me/accounts", "View your accounts")}
+      ${ctaButton("https://online.capitech.me/app/accounts", "View your accounts")}
     `,
   });
 }
@@ -131,7 +131,7 @@ export function depositEmail(opts: {
         <tr>${kvRow("Term", `${opts.termDays} days`)}</tr>
         <tr>${kvRow("Matures", opts.maturityDate)}</tr>
       </table>
-      ${ctaButton("https://app.capitech.me/deposits", "Manage your deposits")}
+      ${ctaButton("https://online.capitech.me/app/deposits", "Manage your deposits")}
     `,
   });
 }
@@ -168,7 +168,7 @@ export function cardEmail(opts: { firstName: string; last4: string; brand: strin
       <h1 style="margin:0 0 12px 0;font-size:22px;letter-spacing:-0.02em;">Virtual card issued 💳</h1>
       <p style="margin:0 0 16px 0;">Hi ${opts.firstName}, a new ${opts.brand} virtual card ending <strong>${opts.last4}</strong> was issued to your account. It is ready for online use.</p>
       <p style="margin:0 0 16px 0;color:#64748b;font-size:13px;">Tip: set a spending limit and freeze the card anytime from the Cards screen.</p>
-      ${ctaButton("https://app.capitech.me/cards", "Manage your cards")}
+      ${ctaButton("https://online.capitech.me/app/cards", "Manage your cards")}
     `,
   });
 }

@@ -6,7 +6,8 @@ const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const COOKIE_DOMAIN = process.env.NEXT_PUBLIC_COOKIE_DOMAIN ?? "";
 const LANDING_URL = process.env.NEXT_PUBLIC_LANDING_URL ?? "http://localhost:3006";
-const ADMIN_URL = process.env.NEXT_PUBLIC_ADMIN_APP_URL ?? "http://localhost:3002";
+const ADMIN_URL = process.env.NEXT_PUBLIC_ADMIN_APP_URL ?? "http://localhost:3002/admin";
+const BASE_PATH = "/app";
 
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
@@ -34,24 +35,27 @@ export async function proxy(request: NextRequest) {
     },
   });
 
+  // IMPORTANT: do not run code between createServerClient and auth.getUser()
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const isProtected = request.nextUrl.pathname.startsWith("/onboarding") || !request.nextUrl.pathname.startsWith("/sign");
+  // Strip the basePath for app-internal route checks
+  const path = request.nextUrl.pathname.replace(new RegExp("^" + BASE_PATH), "") || "/";
+
+  const isProtected = path.startsWith("/onboarding") || !path.startsWith("/sign");
 
   if (!user && isProtected) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/sign-in";
-    return NextResponse.redirect(new URL(url.pathname, LANDING_URL));
+    const url = new URL("/sign-in", LANDING_URL);
+    return NextResponse.redirect(url);
   }
 
   if (user) {
-    // Staff belong in the back office
+    // Staff belong in the back office (admin app)
     const { data: profile } = await supabase.from("profiles").select("role").maybeSingle();
     const role = profile?.role;
     if (role && (role.startsWith("staff_") || role === "super_admin")) {
-      return NextResponse.redirect(new URL(request.nextUrl.pathname, ADMIN_URL));
+      return NextResponse.redirect(new URL(path, ADMIN_URL));
     }
   }
 
@@ -59,5 +63,7 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)"],
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico|api|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
+  ],
 };

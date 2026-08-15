@@ -1,5 +1,11 @@
 {
   "framework": "nextjs",
   "installCommand": "cd ../.. && pnpm install --frozen-lockfile",
-  "buildCommand": "pnpm run build"
+  "buildCommand": "pnpm run build",
+  "rewrites": [
+    { "source": "/app", "destination": "https://capitech-customer.vercel.app/app" },
+    { "source": "/app/:path*", "destination": "https://capitech-customer.vercel.app/app/:path*" },
+    { "source": "/admin", "destination": "https://capitech-admin.vercel.app/admin" },
+    { "source": "/admin/:path*", "destination": "https://capitech-admin.vercel.app/admin/:path*" }
+  ]
 }

@@ -53,7 +53,7 @@ export default function CryptoPage() {
   const [busy, setBusy] = useState(false);
 
   const loadPrices = useCallback(async () => {
-    const res = await fetch("/api/crypto/prices?assets=BTC,ETH,SOL,USDT").then((r) => r.json());
+    const res = await fetch("/app/api/crypto/prices?assets=BTC,ETH,SOL,USDT").then((r) => r.json());
     const map: Record<string, PriceRow> = {};
     for (const p of res.data ?? []) map[p.asset] = p;
     setPrices(map);

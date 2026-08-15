@@ -30,7 +30,7 @@ export function ApprovePaymentButton({ orderId }: { orderId: string }) {
     }
     // Notify the customer by email (best-effort, never blocks)
     if (isSupabaseConfigured()) {
-      fetch("/api/payments/notify", {
+      fetch("/admin/api/payments/notify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ orderId, decision: action }),

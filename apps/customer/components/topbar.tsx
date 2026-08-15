@@ -55,7 +55,7 @@ export function Topbar({ userName, userEmail, unreadCount, mfaEnabled }: TopbarP
 
       <div className="flex items-center gap-2">
         <Button asChild variant="ghost" size="icon" className="relative" aria-label="Notifications">
-          <a href="/notifications">
+          <a href="/app/notifications">
             <Bell className="size-5" />
             {unreadCount > 0 && (
               <span className="absolute right-1.5 top-1.5 flex size-4 items-center justify-center rounded-full bg-brand-600 text-[10px] font-bold text-white">
@@ -82,12 +82,12 @@ export function Topbar({ userName, userEmail, unreadCount, mfaEnabled }: TopbarP
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
-              <a href="/profile">
+              <a href="/app/profile">
                 <Settings className="size-4" /> Profile & Security
               </a>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <a href="/notifications">
+              <a href="/app/notifications">
                 <Bell className="size-4" /> Notifications
               </a>
             </DropdownMenuItem>

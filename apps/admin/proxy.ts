@@ -6,6 +6,7 @@ const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const COOKIE_DOMAIN = process.env.NEXT_PUBLIC_COOKIE_DOMAIN ?? "";
 const LANDING_URL = process.env.NEXT_PUBLIC_LANDING_URL ?? "http://localhost:3006";
+const BASE_PATH = "/admin";
 
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
@@ -37,9 +38,8 @@ export async function proxy(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/sign-in";
-    return NextResponse.redirect(new URL(url.pathname, LANDING_URL));
+    const url = new URL("/sign-in", LANDING_URL);
+    return NextResponse.redirect(url);
   }
 
   // Only staff roles may use the back office
@@ -47,14 +47,15 @@ export async function proxy(request: NextRequest) {
   const role = profile?.role;
   const isStaff = role && (role.startsWith("staff_") || role === "super_admin");
   if (!isStaff) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/";
-    return NextResponse.redirect(new URL(url.pathname, LANDING_URL));
+    const url = new URL("/", LANDING_URL);
+    return NextResponse.redirect(url);
   }
 
   return response;
 }
 
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)"],
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico|api|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
+  ],
 };

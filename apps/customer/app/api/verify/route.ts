@@ -50,7 +50,7 @@ export async function POST(req: Request) {
     body: JSON.stringify({
       workflow_id: WORKFLOW_ID,
       vendor_data: user.id, // stable internal user id — echoed back on every webhook
-      callback: "https://app.capitech.me/onboarding?verified=1",
+      callback: "https://online.capitech.me/app/onboarding?verified=1",
       ...(typeof language === "string" && language.length === 2 ? { language } : {}),
     }),
   });

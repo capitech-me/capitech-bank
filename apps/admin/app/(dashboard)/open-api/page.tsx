@@ -49,7 +49,7 @@ export default function OpenApiPage() {
   const [creating, setCreating] = useState(false);
 
   async function load() {
-    const res = await fetch("/api/openapi/list").then((r) => r.json());
+    const res = await fetch("/admin/api/openapi/list").then((r) => r.json());
     setKeys(res.keys ?? []);
     setEndpoints(res.endpoints ?? []);
     setDeliveries(res.deliveries ?? []);
@@ -62,7 +62,7 @@ export default function OpenApiPage() {
 
   async function createKey() {
     setCreating(true);
-    const res = await fetch("/api/openapi/keys", {
+    const res = await fetch("/admin/api/openapi/keys", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ owner_type: ownerType, owner_id: ownerId, name: keyName, scopes }),
@@ -80,7 +80,7 @@ export default function OpenApiPage() {
   }
 
   async function revokeKey(id: string) {
-    const res = await fetch("/api/openapi/revoke", {
+    const res = await fetch("/admin/api/openapi/revoke", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ keyId: id }),
