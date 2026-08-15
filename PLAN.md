@@ -2,16 +2,25 @@
 
 > Maintained by HAKEM (PMO). Updated continuously as the build progresses.
 
-## Status: Phase 1 complete ✅ · Didit KYC integrated ✅ · Live E2E verified ✅
+## Status: Phase 1 complete ✅ · Phase 2 in progress — Emails ✅ Statements ✅ Open API ✅ Crypto ✅ (code) — awaiting SQL 0012 paste, then deploy
 
 ## Live environment
 - Supabase project: `hekufxbeigxzkyfsqalx` (connected, schema applied, seeded)
 - Demo users: `admin@capitech.me` (staff_admin), `jane@capitech.me` (customer)
-- **Didit KYC**: API key + webhook destination registered (`https://app.capitech.me/api/webhooks/didit`, v3, secret stored) · workflow `29395dea-3494-413e-a9b2-52333b177f79` (Free KYC) · session-create route, HMAC webhook w/ idempotency + status state machine, SDK modal with consent · verified E2E (signature/tamper/stale/replay/DB state machine + real session creation)
+- **Didit KYC**: webhook destination registered (v3) · workflow `29395dea-3494-413e-a9b2-52333b177f79` · verified E2E
 
-## Next
-- Deploy 3 sites to Vercel (capitech.me, app.capitech.me, admin.capitech.me) — then Didit webhook deliveries activate
-- Phase 2: crypto, Open API, real providers, emails (Resend)
+## Phase 2 (built, pending schema paste + deploy)
+| Item | Status |
+|------|--------|
+| Emails — @capitech/email (Resend): welcome, KYC result, transfer, card, deposit, statement templates + triggers | ✅ built (needs RESEND_API_KEY) |
+| Statements — PDF (pdf-lib) + CSV export + statements page | ✅ verified live |
+| Open API — key mgmt, /api/open/v1 (accounts/transfers/webhooks), admin console, HMAC webhook dispatch | ✅ built (needs migration 0012 for key ownership) |
+| Crypto — CoinGecko prices (live verified), buy/sell UI, wallets, order history | ✅ built (needs migration 0012 for execute_crypto_order) |
+
+## ⏳ Next action
+1. User pastes `supabase/apply-0012.sql` (Open API key ownership + post_journal ownership hardening + crypto engine)
+2. Deploy Phase 2 to Vercel ×3 + verify E2E (API key → open API call, crypto trade, statement PDF)
+3. Then DNS change → capitech.me live
 
 ---
 
