@@ -6,6 +6,7 @@ import { Alert, AlertDescription, Button, Card, CardContent, CardDescription, Ca
 import { formatMoney, parseAmount, isValidAmount } from "@capitech/lib";
 import { toast } from "@capitech/ui";
 import { getBrowserClient, isSupabaseConfigured } from "@/lib/supabase-browser";
+import { sendClientEmail } from "@/lib/email-client";
 import type { AccountVM } from "@/lib/data";
 
 export function TransferForm({ accounts }: { accounts: AccountVM[] }) {
@@ -49,6 +50,12 @@ export function TransferForm({ accounts }: { accounts: AccountVM[] }) {
         return;
       }
       toast.success("Transfer scheduled for processing");
+      sendClientEmail("transfer_sent", {
+        amount: parseAmount(amount),
+        currency: selectedAccount.currency,
+        counterparty: toAccount,
+        reference: reference || "Transfer",
+      });
       setSuccess(true);
       setLoading(false);
       return;
@@ -57,6 +64,12 @@ export function TransferForm({ accounts }: { accounts: AccountVM[] }) {
     // Demo mode: simulate success
     await new Promise((r) => setTimeout(r, 800));
     toast.success(`Transfer of ${formatMoney(amount, selectedAccount.currency)} initiated`);
+    sendClientEmail("transfer_sent", {
+      amount: parseAmount(amount),
+      currency: selectedAccount.currency,
+      counterparty: toAccount,
+      reference: reference || "Transfer",
+    });
     setSuccess(true);
     setLoading(false);
   }

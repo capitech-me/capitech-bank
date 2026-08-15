@@ -16,6 +16,7 @@ import { cn } from "@capitech/ui";
 import { COUNTRIES } from "@capitech/lib";
 import { getBrowserClient, isSupabaseConfigured } from "@/lib/supabase-browser";
 import { VerifyButton } from "@/components/didit-verify-button";
+import { sendClientEmail } from "@/lib/email-client";
 
 type OnboardingType = "retail" | "corporate";
 
@@ -149,6 +150,7 @@ export default function OnboardingPage() {
       await new Promise((r) => setTimeout(r, 900));
       toast.success("Application submitted (demo mode)");
     }
+    sendClientEmail("welcome", { firstName: legalFirst || legalName });
     setDone(true);
     setSubmitting(false);
   }

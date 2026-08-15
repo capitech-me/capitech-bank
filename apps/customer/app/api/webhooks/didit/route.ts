@@ -1,6 +1,7 @@
 import crypto from "node:crypto";
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@capitech/db";
+import { kycEmail, sendEmail } from "@capitech/email";
 
 /**
  * Didit KYC webhook — https://app.capitech.me/api/webhooks/didit
@@ -93,19 +94,24 @@ export async function POST(req: Request) {
         kyc_level: "level_2",
       });
       await notifyUser(vendorData, "Identity verified", "Your identity verification was approved. Welcome aboard!", "kyc");
+      await emailUser(vendorData, "approved");
     } else if (parsed.status === "Declined") {
       await applyDecision(vendorData, { kyc_status: "rejected" });
       await notifyUser(vendorData, "Verification declined", "We could not verify your identity. Please review the details and try again.", "kyc");
+      await emailUser(vendorData, "declined");
     } else if (parsed.status === "In Review") {
       await applyDecision(vendorData, { kyc_status: "pending" });
       await notifyUser(vendorData, "Verification in review", "Your identity verification is being reviewed by our compliance team.", "kyc");
+      await emailUser(vendorData, "review");
     } else if (parsed.status === "Resubmitted") {
       // Reviewer asked the user to retry specific steps — reopen to draft.
       await applyDecision(vendorData, { kyc_status: "draft", kyc_level: "unverified" });
       await notifyUser(vendorData, "Action needed", "Some verification documents need to be resubmitted. Please start a new verification.", "kyc");
+      await emailUser(vendorData, "resubmit");
     } else if (parsed.status === "Kyc Expired") {
       await applyDecision(vendorData, { kyc_status: "draft", kyc_level: "unverified" });
       await notifyUser(vendorData, "Re-verification needed", "Your verification has expired. Please re-verify your identity.", "kyc");
+      await emailUser(vendorData, "expired");
     }
     // Not Started | In Progress | Awaiting User | Abandoned | Expired → no-op (logged below)
   } catch (err) {
@@ -179,6 +185,24 @@ async function notifyUser(vendorData: string | undefined, title: string, body: s
       title,
       body,
       read: false,
+    });
+  }
+}
+
+/** Send the KYC result email to the user. */
+async function emailUser(vendorData: string | undefined, status: "approved" | "declined" | "review" | "resubmit" | "expired") {
+  if (!vendorData) return;
+  const supabase = createAdminClient();
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("email, first_name")
+    .eq("id", vendorData)
+    .maybeSingle();
+  if (profile?.email) {
+    await sendEmail({
+      to: profile.email,
+      subject: "Capitech Bank — identity verification update",
+      html: kycEmail({ status, firstName: profile.first_name ?? "there" }),
     });
   }
 }

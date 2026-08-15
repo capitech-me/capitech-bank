@@ -28,6 +28,14 @@ export function ApprovePaymentButton({ orderId }: { orderId: string }) {
     } else {
       await new Promise((r) => setTimeout(r, 500));
     }
+    // Notify the customer by email (best-effort, never blocks)
+    if (isSupabaseConfigured()) {
+      fetch("/api/payments/notify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId, decision: action }),
+      }).catch(() => {});
+    }
     toast.success(action === "approve" ? "Payment authorised" : "Payment rejected");
     setBusy(null);
     window.location.reload();

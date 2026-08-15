@@ -7,6 +7,7 @@ import { formatMoney, formatPercent, formatDate } from "@capitech/lib";
 import { toast } from "@capitech/ui";
 import { cn } from "@capitech/ui";
 import { getBrowserClient, isSupabaseConfigured } from "@/lib/supabase-browser";
+import { sendClientEmail } from "@/lib/email-client";
 import type { DepositVM } from "@/lib/data";
 
 const TERMS = [7, 30, 90, 180, 365];
@@ -47,12 +48,26 @@ function OpenDepositDialog({ accountId }: { accountId: string }) {
         return;
       }
       toast.success("Term deposit opened");
+      sendClientEmail("deposit_opened", {
+        principal,
+        currency: "USD",
+        rate: "4.25",
+        termDays: term,
+        maturityDate: maturity.toISOString().slice(0, 10),
+      });
       setOpen(false);
       window.location.reload();
       return;
     }
     await new Promise((r) => setTimeout(r, 700));
     toast.success(`Term deposit of ${formatMoney(principal || "0", "USD")} opened`);
+    sendClientEmail("deposit_opened", {
+      principal,
+      currency: "USD",
+      rate: "4.25",
+      termDays: term,
+      maturityDate: new Date(new Date().setDate(new Date().getDate() + term)).toISOString().slice(0, 10),
+    });
     setOpen(false);
     window.location.reload();
   }

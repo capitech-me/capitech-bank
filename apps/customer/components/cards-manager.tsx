@@ -7,6 +7,7 @@ import { formatMoney, formatCardExpiry } from "@capitech/lib";
 import { toast } from "@capitech/ui";
 import { cn } from "@capitech/ui";
 import { getBrowserClient, isSupabaseConfigured } from "@/lib/supabase-browser";
+import { sendClientEmail } from "@/lib/email-client";
 import type { CardVM } from "@/lib/data";
 
 function CardVisual({ card }: { card: CardVM }) {
@@ -57,12 +58,14 @@ function CreateCardDialog({ accountId }: { accountId: string }) {
         return;
       }
       toast.success("Virtual card created");
+      sendClientEmail("card_created", { last4, brand });
       setOpen(false);
       window.location.reload();
       return;
     }
     await new Promise((r) => setTimeout(r, 700));
     toast.success("Virtual card created");
+    sendClientEmail("card_created", { last4: "••••", brand });
     setOpen(false);
     window.location.reload();
   }
