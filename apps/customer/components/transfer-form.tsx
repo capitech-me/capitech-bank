@@ -38,7 +38,7 @@ export function TransferForm({ accounts }: { accounts: AccountVM[] }) {
         amount: parseAmount(amount),
         currency: selectedAccount.currency,
         from_account_id: fromAccount,
-        to_account_no: toAccount,
+        to_iban: toAccount.replace(/\s/g, ""),
         narration: narration || null,
         reference: reference || null,
         created_by: user?.id,
