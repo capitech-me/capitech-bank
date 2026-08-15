@@ -2,7 +2,19 @@
 
 > Maintained by HAKEM (PMO). Updated continuously as the build progresses.
 
-## Status: Phase 1 complete ✅ · Phase 2 in progress — Emails ✅ Statements ✅ Open API ✅ Crypto ✅ (code) — awaiting SQL 0012 paste, then deploy
+## Status: Phase 1 ✅ · Phase 2 ✅ · Multi-zone restructure ✅ deployed (online.capitech.me) — awaiting DNS + hotfix3 paste
+
+## Live topology (single domain)
+- **online.capitech.me** → landing (rewrites `/app/*` → customer, `/admin/*` → admin)
+- customer app: basePath `/app` · admin app: basePath `/admin`
+- Didit webhook retargeted → `https://online.capitech.me/app/api/webhooks/didit`
+- Production deployments: landing `ondscbbnf` · customer `4t5wth5nh` · admin `d5s9h33e8` (stable aliases `capitech-{app}.vercel.app`)
+
+## ⏳ Remaining to go live
+1. **DNS**: `online.capitech.me → CNAME cname.vercel-dns.com` (or A 76.76.21.21) at registrar
+2. **Paste `supabase/apply-hotfix3.sql`** (execute_payment v_fee_lines uuid + execute_crypto_order gen_random_bytes) — unlocks transfer approval + crypto buy
+3. Resend: verify `capitech.me` sender domain (key works; DNS change also fixes this)
+4. Re-run full-flow E2E → expect 34/34
 
 ## Live environment
 - Supabase project: `hekufxbeigxzkyfsqalx` (connected, schema applied, seeded)
