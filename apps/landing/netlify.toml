@@ -1,0 +1,29 @@
+# ============================================================
+# Capitech Bank — Landing site (https://capitech.me)
+# Netlify: Site 1 of 3 in the monorepo
+# ============================================================
+
+[build]
+  base = "apps/landing"
+  command = "cd ../.. && pnpm install --frozen-lockfile && cd apps/landing && pnpm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "22"
+  NEXT_PRIVATE_BUILD_WORKER = "1"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+[[redirects]]
+  from = "/sign-in"
+  to = "/sign-in"
+  status = 200
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"

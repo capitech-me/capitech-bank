@@ -1,8 +1,11 @@
 packages:
   - "apps/*"
   - "packages/*"
+
+# pnpm 11 supply-chain settings
 allowBuilds:
-  unrs-resolver: set this to true or false
+  unrs-resolver: true
+
 minimumReleaseAgeExclude:
   - '@turbo/darwin-64@2.10.10'
   - '@turbo/darwin-arm64@2.10.10'

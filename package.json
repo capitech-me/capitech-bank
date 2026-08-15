@@ -19,5 +19,10 @@
   "devDependencies": {
     "turbo": "^2.10.10",
     "typescript": "^5.7.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "unrs-resolver"
+    ]
   }
 }
