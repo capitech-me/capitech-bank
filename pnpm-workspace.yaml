@@ -1,0 +1,13 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+allowBuilds:
+  unrs-resolver: set this to true or false
+minimumReleaseAgeExclude:
+  - '@turbo/darwin-64@2.10.10'
+  - '@turbo/darwin-arm64@2.10.10'
+  - '@turbo/linux-64@2.10.10'
+  - '@turbo/linux-arm64@2.10.10'
+  - '@turbo/windows-64@2.10.10'
+  - '@turbo/windows-arm64@2.10.10'
+  - turbo@2.10.10

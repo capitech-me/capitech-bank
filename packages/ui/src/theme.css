@@ -1,0 +1,152 @@
+/* ============================================================
+   Capitech Bank — Design System (Tailwind CSS v4)
+   Brand: professional fintech — deep blue + navy + teal accent
+   ============================================================ */
+
+@import "tailwindcss";
+/* tw-animate-css vendored locally (package exports map is incompatible with Turbopack CSS resolution) */
+@import "./tw-animate.css";
+
+@theme inline {
+  /* Brand blue (primary) */
+  --color-brand-50: #eff5ff;
+  --color-brand-100: #dbe8fe;
+  --color-brand-200: #bfd7fe;
+  --color-brand-300: #93bbfd;
+  --color-brand-400: #6096fa;
+  --color-brand-500: #3b76f6;
+  --color-brand-600: #2557eb;
+  --color-brand-700: #1d43d8;
+  --color-brand-800: #1e38ae;
+  --color-brand-900: #1e3389;
+  --color-brand-950: #172153;
+
+  /* Navy (dark surfaces / hero) */
+  --color-navy-50: #f6f7f9;
+  --color-navy-100: #eceef2;
+  --color-navy-200: #d5dae3;
+  --color-navy-300: #b1bccd;
+  --color-navy-400: #8797af;
+  --color-navy-500: #687a96;
+  --color-navy-600: #52627c;
+  --color-navy-700: #435065;
+  --color-navy-800: #3a4555;
+  --color-navy-900: #343c49;
+  --color-navy-950: #0b1220;
+
+  /* Teal accent */
+  --color-accent-400: #2dd4bf;
+  --color-accent-500: #14b8a6;
+  --color-accent-600: #0d9488;
+
+  /* Semantic aliases */
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+  --color-info: #0ea5e9;
+
+  /* Fonts (apps inject next/font variables) */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  /* shadcn-style semantic tokens */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+:root {
+  --background: oklch(0.985 0.002 247);
+  --foreground: oklch(0.15 0.03 262);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.15 0.03 262);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.15 0.03 262);
+  --primary: #2557eb;
+  --primary-foreground: oklch(0.985 0.002 247);
+  --secondary: #f1f5f9;
+  --secondary-foreground: #1e3389;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  --accent: #0d9488;
+  --accent-foreground: #ffffff;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: oklch(0.922 0.007 247);
+  --input: oklch(0.922 0.007 247);
+  --ring: #2557eb;
+  --radius: 0.625rem;
+  --chart-1: #2557eb;
+  --chart-2: #14b8a6;
+  --chart-3: #f59e0b;
+  --chart-4: #8b5cf6;
+  --chart-5: #f43f5e;
+}
+
+.dark {
+  --background: #0b1220;
+  --foreground: oklch(0.97 0.005 247);
+  --card: #0f1a2e;
+  --card-foreground: oklch(0.97 0.005 247);
+  --popover: #0f1a2e;
+  --popover-foreground: oklch(0.97 0.005 247);
+  --primary: #6096fa;
+  --primary-foreground: #0b1220;
+  --secondary: #1e293b;
+  --secondary-foreground: #dbe8fe;
+  --muted: #1e293b;
+  --muted-foreground: #94a3b8;
+  --accent: #2dd4bf;
+  --accent-foreground: #0b1220;
+  --destructive: #f87171;
+  --destructive-foreground: #0b1220;
+  --border: #1e293b;
+  --input: #1e293b;
+  --ring: #6096fa;
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  ::selection {
+    background-color: var(--ring);
+    color: var(--primary-foreground);
+  }
+}

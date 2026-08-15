@@ -1,0 +1,42 @@
+# dependencies
+node_modules/
+.pnp
+.pnp.*
+
+# next.js
+.next/
+out/
+build/
+dist/
+*.tsbuildinfo
+
+# turbo
+.turbo/
+
+# env
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# supabase
+supabase/.branches/
+supabase/.temp/
+
+# misc
+.DS_Store
+*.pem
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# vercel / netlify
+.vercel
+.netlify
+
+# typescript
+*.tsbuildinfo
+
+# editor
+.vscode/
+.idea/
