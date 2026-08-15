@@ -5,7 +5,7 @@ deposits, double-entry core banking, Open API (phase 2), multi-tenant back & fro
 offices, retail + corporate onboarding.
 
 **Stack**: Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS v4 ·
-Supabase (Postgres, Auth+MFA, Storage, Realtime, Edge Functions) · Netlify · pnpm ·
+Supabase (Postgres, Auth+MFA, Storage, Realtime, Edge Functions) · Vercel · pnpm ·
 Turborepo
 
 **Domain**: `capitech.me` (landing) · `app.capitech.me` (customer) · `admin.capitech.me` (back office)

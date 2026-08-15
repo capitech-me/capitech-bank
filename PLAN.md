@@ -10,7 +10,7 @@
 - **Didit KYC**: API key + webhook destination registered (`https://app.capitech.me/api/webhooks/didit`, v3, secret stored) · workflow `29395dea-3494-413e-a9b2-52333b177f79` (Free KYC) · session-create route, HMAC webhook w/ idempotency + status state machine, SDK modal with consent · verified E2E (signature/tamper/stale/replay/DB state machine + real session creation)
 
 ## Next
-- Deploy 3 sites to Netlify (capitech.me, app.capitech.me, admin.capitech.me) — then Didit webhook deliveries activate
+- Deploy 3 sites to Vercel (capitech.me, app.capitech.me, admin.capitech.me) — then Didit webhook deliveries activate
 - Phase 2: crypto, Open API, real providers, emails (Resend)
 
 ---
@@ -29,7 +29,7 @@
 | 7 | Supabase schema: tenancy, profiles, KYC, COA, ledger engine, payments, cards, deposits, RLS, storage | ✅ done |
 | 8 | Customer front office (dashboard, accounts, transfers, cards, deposits, crypto placeholder, notifications, profile) | ✅ done |
 | 9 | Admin back office (overview, KYC queue, customers, accounts, ledger, approvals, products, staff, audit) | ✅ done |
-| 10 | Netlify deploy configs (3 sites) | ✅ done |
+| 10 | Vercel deploy configs (3 sites) | ✅ done |
 | 11 | Connect real Supabase project (auth + RLS + storage) | ⏳ needs credentials |
 | 12 | Seed demo users/accounts; end-to-end verification | ⏳ pending |
 
@@ -56,7 +56,7 @@
 ---
 
 ## Architecture decisions (locked)
-- Next.js 16 App Router + Turbopack (Netlify runtime)
+- Next.js 16 App Router + Turbopack (Vercel runtime)
 - Tailwind CSS v4 + vendored tw-animate-css (exports-map workaround)
 - Single write path: `post_journal()` SECURITY DEFINER (double-entry, no overdraft)
 - Maker–checker on payment execution; SCA tokens reserved
