@@ -2,12 +2,16 @@
 
 > Maintained by HAKEM (PMO). Updated continuously as the build progresses.
 
-## Status: Phase 1 — UI complete ✅ · Schema complete ✅ · Live Supabase connected ✅ · Awaiting schema apply (SQL Editor paste) then seed + end-to-end verification.
+## Status: Phase 1 complete ✅ · Didit KYC integrated ✅ · Live E2E verified ✅
 
 ## Live environment
-- Supabase project: `hekufxbeigxzkyfsqalx` (connected, keys verified)
-- Demo users created (Auth API): `admin@capitech.me` (staff_admin), `jane@capitech.me` (customer)
-- Next: user pastes `supabase/apply-all.sql` in the SQL Editor → then run `seed-live.mjs` → verify E2E
+- Supabase project: `hekufxbeigxzkyfsqalx` (connected, schema applied, seeded)
+- Demo users: `admin@capitech.me` (staff_admin), `jane@capitech.me` (customer)
+- **Didit KYC**: API key + webhook destination registered (`https://app.capitech.me/api/webhooks/didit`, v3, secret stored) · workflow `29395dea-3494-413e-a9b2-52333b177f79` (Free KYC) · session-create route, HMAC webhook w/ idempotency + status state machine, SDK modal with consent · verified E2E (signature/tamper/stale/replay/DB state machine + real session creation)
+
+## Next
+- Deploy 3 sites to Netlify (capitech.me, app.capitech.me, admin.capitech.me) — then Didit webhook deliveries activate
+- Phase 2: crypto, Open API, real providers, emails (Resend)
 
 ---
 

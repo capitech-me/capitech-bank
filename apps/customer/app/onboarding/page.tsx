@@ -15,6 +15,7 @@ import { toast } from "@capitech/ui";
 import { cn } from "@capitech/ui";
 import { COUNTRIES } from "@capitech/lib";
 import { getBrowserClient, isSupabaseConfigured } from "@/lib/supabase-browser";
+import { VerifyButton } from "@/components/didit-verify-button";
 
 type OnboardingType = "retail" | "corporate";
 
@@ -343,7 +344,27 @@ export default function OnboardingPage() {
             {step === 2 && (
               <div className="space-y-5">
                 <div>
-                  <CardTitle>Identity documents</CardTitle>
+                  <CardTitle>Identity verification</CardTitle>
+                  <CardDescription className="mt-1">
+                    Verify your identity with Didit — scan your ID, take a selfie and confirm your
+                    details in the secure flow. Optional: upload supporting documents below.
+                  </CardDescription>
+                </div>
+
+                <div className="rounded-xl border border-brand-200 bg-brand-50/50 p-4">
+                  <p className="text-sm font-medium text-navy-950">Secure identity check</p>
+                  <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                    Powered by Didit. Your documents, biometrics and device information are
+                    processed by our verification partner in line with our Privacy Policy. The
+                    result is applied automatically — no manual review required.
+                  </p>
+                  <div className="mt-3">
+                    <VerifyButton label="Verify my identity with Didit" />
+                  </div>
+                </div>
+
+                <div>
+                  <CardTitle className="text-base">Supporting documents (optional)</CardTitle>
                   <CardDescription className="mt-1">Upload a clear photo or scan of your document. We never share your data.</CardDescription>
                 </div>
                 <div className="space-y-2">
@@ -355,8 +376,8 @@ export default function OnboardingPage() {
                     </SelectContent>
                   </Select>
                 </div>
-                <label className="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-border bg-muted/40 px-6 py-10 text-center transition-colors hover:border-brand-300">
-                  <FileUp className="size-8 text-muted-foreground" />
+                <label className="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-border bg-muted/40 px-6 py-8 text-center transition-colors hover:border-brand-300">
+                  <FileUp className="size-7 text-muted-foreground" />
                   <p className="mt-3 text-sm font-medium text-navy-950">
                     {docFile ? docFile.name : "Click to upload your document"}
                   </p>
@@ -370,7 +391,7 @@ export default function OnboardingPage() {
                 </label>
                 <div className="flex justify-between">
                   <Button variant="ghost" onClick={() => setStep(1)}><ArrowLeft className="size-4" /> Back</Button>
-                  <Button onClick={() => setStep(3)} disabled={!docFile}>
+                  <Button onClick={() => setStep(3)}>
                     Continue <ArrowRight className="size-4" />
                   </Button>
                 </div>

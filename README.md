@@ -56,6 +56,10 @@ fall back to simulated success.
 - Core banking schema: multi-tenant, double-entry `post_journal()` write path,
   IFRS-aligned chart of accounts, IBAN/mod-97 generation, SCA tokens, pg_cron jobs
 - Security: RLS on every table, tokenised cards (last4 only), staff-only back office
+- **Didit KYC**: server-side session creation (`/api/verify`), HMAC-SHA256 webhook with
+  timestamp freshness + event idempotency (`/api/webhooks/didit`), status state machine
+  (Approved/Declined/In Review/Resubmitted/Kyc Expired → customers + notifications),
+  in-app SDK modal with consent, ISO 13616 IBANs
 
 ## Phase 2 roadmap
 

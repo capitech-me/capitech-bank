@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { KeyRound, Mail, Phone, ShieldCheck, Smartphone, User } from "lucide-react";
+import { KeyRound, Mail, Phone, ShieldCheck, Smartphone, User, Fingerprint } from "lucide-react";
 import { Alert, AlertDescription, Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input, Label, Switch } from "@capitech/ui";
 import { toast } from "@capitech/ui";
 import { getBrowserClient, isSupabaseConfigured } from "@/lib/supabase-browser";
+import { VerifyButton } from "@/components/didit-verify-button";
 
 interface ProfileData {
   first_name: string | null;
@@ -26,12 +27,18 @@ export default function ProfilePage() {
   const [mfaCode, setMfaCode] = useState("");
   const [mfaBusy, setMfaBusy] = useState(false);
 
+  // KYC state
+  const [kycStatus, setKycStatus] = useState<string>("draft");
+  const [kycLevel, setKycLevel] = useState<string>("unverified");
+
   useEffect(() => {
     async function load() {
       if (!isSupabaseConfigured()) {
         setProfile({ first_name: "Jane", last_name: "Doe", phone: "+1 555 010 2324", email_notifications: true });
         setEmail("jane.doe@capitech.me");
         setMfaEnabled(true);
+        setKycStatus("approved");
+        setKycLevel("level_2");
         setLoading(false);
         return;
       }
@@ -43,6 +50,11 @@ export default function ProfilePage() {
       if (profileData) setProfile(profileData as ProfileData);
       const { data: factorsData } = await supabase.auth.mfa.listFactors();
       setMfaEnabled((factorsData?.totp.length ?? 0) > 0);
+      const { data: customerData } = await supabase.from("customers").select("kyc_status, kyc_level").maybeSingle();
+      if (customerData) {
+        setKycStatus(customerData.kyc_status);
+        setKycLevel(customerData.kyc_level);
+      }
       setLoading(false);
     }
     load();
@@ -237,6 +249,49 @@ export default function ProfilePage() {
               </Button>
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      {/* Identity verification */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Fingerprint className="size-4 text-brand-600" /> Identity verification
+          </CardTitle>
+          <CardDescription>Verify your identity with Didit to unlock full account access.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {kycStatus === "approved" ? (
+            <Alert variant="success">
+              <AlertDescription className="flex items-center justify-between gap-2">
+                <span className="flex items-center gap-2">
+                  <ShieldCheck className="size-4" /> Identity verified ({kycLevel})
+                </span>
+                <Badge variant="success">Approved</Badge>
+              </AlertDescription>
+            </Alert>
+          ) : kycStatus === "pending" ? (
+            <Alert variant="info">
+              <AlertDescription className="flex items-center gap-2">
+                <ShieldCheck className="size-4" /> Verification in review — we will notify you by email.
+              </AlertDescription>
+            </Alert>
+          ) : kycStatus === "rejected" ? (
+            <Alert variant="destructive">
+              <AlertDescription className="flex items-center gap-2">
+                <ShieldCheck className="size-4" /> Verification declined — please re-verify with clear documents.
+              </AlertDescription>
+            </Alert>
+          ) : (
+            <Alert variant="warning">
+              <AlertDescription className="flex items-center gap-2">
+                <ShieldCheck className="size-4" /> Identity not verified yet.
+              </AlertDescription>
+            </Alert>
+          )}
+          <div className="mt-4">
+            <VerifyButton label="Start identity verification" />
+          </div>
         </CardContent>
       </Card>
 
