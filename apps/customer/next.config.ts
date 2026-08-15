@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  transpilePackages: ["@capitech/ui", "@capitech/db", "@capitech/lib"],
 };
 
 export default nextConfig;

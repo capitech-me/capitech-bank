@@ -1,7 +1,9 @@
 "use client";
 
-import { Toaster as SonnerToaster, type ToasterProps } from "sonner";
+import { Toaster as SonnerToaster, toast, type ToasterProps } from "sonner";
 import { cn } from "../../lib/cn";
+
+export { toast };
 
 function Toaster({ ...props }: ToasterProps) {
   return (

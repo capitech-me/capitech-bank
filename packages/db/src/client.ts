@@ -23,22 +23,15 @@ export function createBrowserClient() {
 
 /**
  * Server client bound to the request cookies (use in Server Components / Route Handlers).
- * `cookieStore` is the result of `await cookies()` from next/headers.
+ * Pass the `cookies` accessor pair exactly like `@supabase/ssr` expects:
+ *   cookies: { getAll: () => cookieStore.getAll(), setAll: (list) => list.forEach(({name,value,options}) => cookieStore.set(name,value,options)) }
  */
-export async function createServerClient(cookieStore: { getAll: () => { name: string; value: string }[]; set: (name: string, value: string, options?: unknown) => void; remove: (name: string, options?: unknown) => void }) {
+export async function createServerClient(cookies: {
+  getAll: () => { name: string; value: string }[];
+  setAll: (cookiesToSet: { name: string; value: string; options?: Record<string, unknown> }[]) => void;
+}) {
   return createServerSupabaseClient(supabaseUrl(), supabaseAnonKey(), {
-    cookies: {
-      getAll() {
-        return cookieStore.getAll();
-      },
-      setAll(cookiesToSet) {
-        try {
-          cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options));
-        } catch {
-          // Called from a Server Component — safe to ignore when middleware refreshes sessions
-        }
-      },
-    },
+    cookies,
   });
 }
 
