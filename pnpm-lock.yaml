@@ -29,6 +29,9 @@ importers:
       '@capitech/lib':
         specifier: workspace:*
         version: link:../../packages/lib
+      '@capitech/openapi':
+        specifier: workspace:*
+        version: link:../../packages/openapi
       '@capitech/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -65,7 +68,7 @@ importers:
         version: 9.39.5(jiti@2.7.0)
       eslint-config-next:
         specifier: 16.3.1
-        version: 16.3.1(eslint@9.39.5(jiti@2.7.0))(typescript@5.9.3)
+        version: 16.3.1(@typescript-eslint/parser@8.67.0(eslint@9.39.5(jiti@2.7.0))(typescript@5.9.3))(eslint@9.39.5(jiti@2.7.0))(typescript@5.9.3)
       tailwindcss:
         specifier: ^4
         version: 4.3.3
@@ -84,6 +87,9 @@ importers:
       '@capitech/lib':
         specifier: workspace:*
         version: link:../../packages/lib
+      '@capitech/openapi':
+        specifier: workspace:*
+        version: link:../../packages/openapi
       '@capitech/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -126,7 +132,7 @@ importers:
         version: 9.39.5(jiti@2.7.0)
       eslint-config-next:
         specifier: 16.3.1
-        version: 16.3.1(@typescript-eslint/parser@8.67.0(eslint@9.39.5(jiti@2.7.0))(typescript@5.9.3))(eslint@9.39.5(jiti@2.7.0))(typescript@5.9.3)
+        version: 16.3.1(eslint@9.39.5(jiti@2.7.0))(typescript@5.9.3)
       tailwindcss:
         specifier: ^4
         version: 4.3.3
@@ -216,6 +222,16 @@ importers:
         version: 5.9.3
 
   packages/lib:
+    devDependencies:
+      typescript:
+        specifier: ^5.7.0
+        version: 5.9.3
+
+  packages/openapi:
+    dependencies:
+      '@capitech/db':
+        specifier: workspace:*
+        version: link:../db
     devDependencies:
       typescript:
         specifier: ^5.7.0

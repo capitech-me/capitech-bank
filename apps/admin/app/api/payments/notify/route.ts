@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createServerClient } from "@capitech/db";
 import { cookies } from "next/headers";
 import { emailDate, sendEmail, transferEmail } from "@capitech/email";
+import { dispatchWebhooks } from "@capitech/openapi";
 
 /**
  * Payment decision notification (admin app).
@@ -50,12 +51,25 @@ export async function POST(req: Request) {
   // Look up the order + creator's email
   const { data: order } = await supabase
     .from("payment_orders")
-    .select("amount, currency, to_iban, to_beneficiary_name, reference, narration, created_by, status, fee_amount")
+    .select("amount, currency, to_iban, to_beneficiary_name, reference, narration, created_by, status, fee_amount, tenant_id")
     .eq("id", orderId)
     .maybeSingle();
   if (!order) {
     return NextResponse.json({ error: "not_found" }, { status: 404 });
   }
+
+  // Notify Open API subscribers of the status change
+  await dispatchWebhooks(
+    "payment.updated",
+    {
+      order_id: orderId,
+      amount: order.amount,
+      currency: order.currency,
+      status: order.status,
+      decision,
+    },
+    order.tenant_id
+  ).catch(() => {});
 
   const { data: creatorProfile } = await supabase
     .from("profiles")

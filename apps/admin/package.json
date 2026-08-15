@@ -13,6 +13,7 @@
     "@capitech/db": "workspace:*",
     "@capitech/email": "workspace:*",
     "@capitech/lib": "workspace:*",
+    "@capitech/openapi": "workspace:*",
     "@capitech/ui": "workspace:*",
     "@supabase/ssr": "0.12.4",
     "lucide-react": "^0.475.0",

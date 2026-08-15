@@ -14,6 +14,7 @@ import {
   UserCog,
   ScrollText,
   ShieldCheck,
+  KeyRound,
   Menu,
   X,
 } from "lucide-react";
@@ -27,6 +28,7 @@ const NAV_ITEMS = [
   { href: "/ledger", label: "General Ledger", icon: BookOpenText },
   { href: "/payments", label: "Payment Approvals", icon: ArrowLeftRight, badge: "3" },
   { href: "/products", label: "Products", icon: Package },
+  { href: "/open-api", label: "Open API", icon: KeyRound },
 ];
 
 const BOTTOM_ITEMS = [
