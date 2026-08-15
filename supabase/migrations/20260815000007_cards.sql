@@ -118,7 +118,7 @@ begin
 end;
 $$;
 
-grant execute on function public.simulate_card_purchase(uuid, numeric, char, text, text, text, char) to authenticated;
+grant execute on function public.simulate_card_purchase(uuid, numeric, character, text, text, text, character) to authenticated;
 
 create trigger cards_touch before update on public.cards
   for each row execute function public.touch_updated_at();

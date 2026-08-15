@@ -271,7 +271,7 @@ begin
 end;
 $$;
 
-grant execute on function public.create_payment(text, numeric, char, uuid, uuid, text, text, text, text, text, text) to authenticated;
+grant execute on function public.create_payment(text, numeric, character, uuid, uuid, text, text, text, text, text, text) to authenticated;
 grant execute on function public.execute_payment(uuid, uuid, boolean) to authenticated;
 grant execute on function public.next_journal_no() to authenticated;
 

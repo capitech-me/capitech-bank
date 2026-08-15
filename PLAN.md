@@ -2,7 +2,12 @@
 
 > Maintained by HAKEM (PMO). Updated continuously as the build progresses.
 
-## Status: Phase 1 in progress — UI complete, database schema complete, awaiting Supabase project credentials to wire auth + data end-to-end.
+## Status: Phase 1 — UI complete ✅ · Schema complete ✅ · Live Supabase connected ✅ · Awaiting schema apply (SQL Editor paste) then seed + end-to-end verification.
+
+## Live environment
+- Supabase project: `hekufxbeigxzkyfsqalx` (connected, keys verified)
+- Demo users created (Auth API): `admin@capitech.me` (staff_admin), `jane@capitech.me` (customer)
+- Next: user pastes `supabase/apply-all.sql` in the SQL Editor → then run `seed-live.mjs` → verify E2E
 
 ---
 

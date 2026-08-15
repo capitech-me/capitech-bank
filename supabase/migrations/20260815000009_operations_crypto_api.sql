@@ -134,16 +134,22 @@ create table public.api_usage_logs (
 );
 
 -- ------------------------------------------------------------
--- Scheduled jobs (pg_cron)
+-- Scheduled jobs (pg_cron) — guarded: only if pg_cron enabled
 -- ------------------------------------------------------------
-select cron.schedule(
-  'capitech-accrue-interest',
-  '0 2 * * *', -- daily 02:00 UTC
-  'select public.accrue_deposit_interest()'
-);
-
-select cron.schedule(
-  'capitech-mature-deposits',
-  '15 2 * * *', -- daily 02:15 UTC
-  'select public.mature_deposits()'
-);
+do $$
+begin
+  if exists (select 1 from pg_extension where extname = 'pg_cron') then
+    perform cron.schedule(
+      'capitech-accrue-interest',
+      '0 2 * * *', -- daily 02:00 UTC
+      'select public.accrue_deposit_interest()'
+    );
+    perform cron.schedule(
+      'capitech-mature-deposits',
+      '15 2 * * *', -- daily 02:15 UTC
+      'select public.mature_deposits()'
+    );
+  else
+    raise notice 'pg_cron not enabled — scheduled jobs skipped. Enable via Database → Extensions.';
+  end if;
+end $$;

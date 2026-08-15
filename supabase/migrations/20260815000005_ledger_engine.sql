@@ -443,7 +443,7 @@ as $$
 $$;
 
 grant execute on function public.post_journal(text, jsonb, text, text, timestamptz, uuid, uuid) to authenticated;
-grant execute on function public.open_account(text, uuid, uuid, char, text) to authenticated;
+grant execute on function public.open_account(text, uuid, uuid, character, text) to authenticated;
 grant execute on function public.ledger_snapshot() to authenticated;
 grant execute on function public.current_tenant_id() to authenticated, anon;
 grant execute on function public.is_staff() to authenticated, anon;
