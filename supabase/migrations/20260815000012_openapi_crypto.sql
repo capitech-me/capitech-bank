@@ -259,8 +259,7 @@ begin
   end if;
 
   update public.crypto_wallets
-  set balance = balance + case when p_side = 'buy' then v_amount_asset else -v_amount_asset end,
-      updated_at = now()
+  set balance = balance + case when p_side = 'buy' then v_amount_asset else -v_amount_asset end
   where id = v_wallet.id;
 
   insert into public.crypto_orders (
