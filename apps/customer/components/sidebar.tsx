@@ -12,6 +12,7 @@ import {
   Coins,
   Bell,
   UserCircle2,
+  FileText,
   Menu,
   X,
 } from "lucide-react";
@@ -24,6 +25,7 @@ const NAV_ITEMS = [
   { href: "/cards", label: "Cards", icon: CreditCard },
   { href: "/deposits", label: "Term Deposits", icon: PiggyBank },
   { href: "/crypto", label: "Crypto", icon: Coins, badge: "Soon" },
+  { href: "/statements", label: "Statements", icon: FileText },
 ];
 
 const BOTTOM_ITEMS = [
