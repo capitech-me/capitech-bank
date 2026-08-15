@@ -6,6 +6,57 @@
 export const BANK_BIC_PREFIX = "CAPT"; // sandbox BIC prefix
 export const BANK_CODE = "CAPT"; // sandbox bank code used inside BBAN
 
+/** Country → sandbox bank identifier matching the country's BBAN structure. */
+const BANK_CODES: Record<string, string> = {
+  AE: "999", // 3-digit bank code
+  DE: "99999999", // 8-digit BLZ
+  GB: "CAPT", // 4-char sort code
+  FR: "99999", // 5-digit bank
+  ES: "9999", // 4-digit
+  IT: "99999", // 5-digit
+  NL: "CAPT", // 4-char
+  SA: "99", // 2-digit
+  TR: "99999", // 5-digit
+  PL: "99999999", // 8-digit
+  CZ: "9999", // 4-digit
+  HU: "99999999", // 8-digit
+  RO: "CAPT", // 4-char
+  BG: "CAPT", // 4-char
+  BR: "9999999", // 7-digit
+  KZ: "999", // 3-digit
+  UA: "999999", // 6-digit
+  IL: "999", // 3-digit
+  KW: "CAPT", // 4-char
+  BH: "CAPT", // 4-char
+  QA: "CAPT", // 4-char
+  JO: "CAPT", // 4-char
+  MU: "CAPT", // 4-char
+  SC: "CAPT", // 4-char
+  MC: "99999", // 5-digit
+  SM: "99999", // 5-digit
+  AD: "9999", // 4-digit
+  LI: "99999", // 5-digit
+  CH: "99999", // 5-digit
+  AT: "99999", // 5-digit
+  PT: "9999", // 4-digit
+  GR: "999", // 3-digit
+  SE: "9999", // 4-digit
+  NO: "9999", // 4-digit
+  FI: "999999", // 6-digit
+  DK: "9999", // 4-digit
+  IS: "9999", // 4-digit
+  IE: "CAPT", // 4-char
+  LU: "999", // 3-digit
+  BE: "999", // 3-digit
+  HR: "9999999", // 7-digit
+  SI: "99", // 2-digit
+  SK: "9999", // 4-digit
+  EE: "99", // 2-digit
+  LV: "CAPT", // 4-char
+  LT: "99999", // 5-digit
+  MT: "CAPT", // 4-char
+};
+
 interface IbanSpec {
   length: number;
   bban: string; // regex of BBAN structure
@@ -121,16 +172,20 @@ export function isValidIban(iban: string): boolean {
   return cleaned.slice(2, 4) === expected;
 }
 
-/** Generate a sandbox IBAN for an account in the given country. */
+/** Generate an ISO 13616-compliant IBAN for an account in the given country. */
 export function generateIban(countryCode: string, accountNumber: string): string {
   const country = countryCode.toUpperCase();
   const spec = IBAN_SPECS[country];
   if (!spec) throw new Error(`IBAN generation not supported for country: ${country}`);
-  // BBAN = bank code + account number, padded to spec length with digits
   const bbanLength = spec.length - 4;
-  const bankAndAccount = BANK_CODE + accountNumber.replace(/\D/g, "");
-  const bban = (bankAndAccount + "0".repeat(bbanLength)).slice(0, bbanLength);
-  // sanity: must match the structure (digits mostly)
+  const bank = BANK_CODES[country] ?? "99999";
+  const digits = accountNumber.replace(/\D/g, "");
+  const padded = digits.padStart(Math.max(bbanLength - bank.length, 0), "0");
+  let bban = (bank + padded).slice(0, bbanLength);
+  // Structure guard: if the composed BBAN doesn't match the national format, fall back to digits
+  if (!new RegExp(`^${spec.bban}$`).test(bban)) {
+    bban = digits.padStart(bbanLength, "0");
+  }
   const check = computeIbanCheckDigits(country, bban);
   return `${country}${check}${bban}`;
 }

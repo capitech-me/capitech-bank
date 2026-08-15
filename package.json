@@ -17,6 +17,7 @@
     "dev:admin": "pnpm --filter @capitech/admin dev"
   },
   "devDependencies": {
+    "@supabase/supabase-js": "^2.112.3",
     "turbo": "^2.10.10",
     "typescript": "^5.7.0"
   },

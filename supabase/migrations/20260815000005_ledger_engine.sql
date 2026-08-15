@@ -280,7 +280,6 @@ declare
   v_dr_sum numeric(20,2) := 0;
   v_cr_sum numeric(20,2) := 0;
   v_bal public.accounts%rowtype;
-  v_coa_bal public.balances%rowtype;
   v_normal_side text;
   v_available numeric(20,2);
 begin
@@ -324,8 +323,10 @@ begin
       v_cr_sum := v_cr_sum + v_credit;
     elsif v_kind = 'coa' then
       v_coa_id := v_account_id;
-      select * into v_coa_bal from public.coa_accounts where id = v_coa_id;
-      if v_coa_bal is null or v_coa_bal.tenant_id <> v_tenant then
+      if not exists (
+        select 1 from public.coa_accounts
+        where id = v_coa_id and tenant_id = v_tenant
+      ) then
         raise exception 'COA account % not found', v_coa_id;
       end if;
       v_dr_sum := v_dr_sum + v_debit;

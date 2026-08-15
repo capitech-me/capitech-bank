@@ -205,7 +205,7 @@ begin
 
     -- fee: 0.5% capped at 20 units, charged to sender, credited to Fee Income
     v_fee_amount := least(greatest(v_order.amount * 0.005, 0.50), 20.00);
-    select c.id into v_fee_lines from public.coa_accounts where tenant_id = v_tenant and code = '4000';
+    select id into v_fee_lines from public.coa_accounts where tenant_id = v_tenant and code = '4000';
     v_lines := v_lines ||
       jsonb_build_array(
         jsonb_build_object('account_kind', 'customer', 'account_id', v_order.from_account_id, 'currency', v_order.currency, 'debit', v_fee_amount, 'credit', 0, 'memo', 'Transfer fee'),

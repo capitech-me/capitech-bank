@@ -43,9 +43,9 @@ const CUSTOMER_EMAIL = "jane@capitech.me";
 const CORP_OWNER_EMAIL = "corp@capitech.me";
 
 async function findUser(email) {
-  const { data, error } = await supabase.auth.admin.getUserByEmail(email);
+  const { data, error } = await supabase.auth.admin.listUsers({ page: 1, perPage: 200 });
   if (error) throw error;
-  return data.user;
+  return (data.users ?? []).find((u) => u.email === email);
 }
 
 async function upsertProfile(user, { role, firstName, lastName }) {
@@ -168,10 +168,17 @@ async function main() {
       .select()
       .single();
 
-    const { data: org } = await supabase
+    const { data: existingOrg } = await supabase
       .from("organizations")
-      .upsert(
-        {
+      .select("id")
+      .eq("legal_name", "Acme Trading LLC")
+      .maybeSingle();
+
+    let org = existingOrg;
+    if (!org) {
+      const { data: created, error: oErr } = await supabase
+        .from("organizations")
+        .insert({
           tenant_id: tenantId,
           customer_id: corpCustomer.id,
           legal_name: "Acme Trading LLC",
@@ -179,39 +186,55 @@ async function main() {
           country_of_incorporation: "AE",
           kyc_status: "approved",
           risk_score: 28,
-        },
-        { onConflict: ["tenant_id", "legal_name"] }
-      )
-      .select()
-      .single();
+        })
+        .select()
+        .single();
+      if (oErr) throw oErr;
+      org = created;
+    }
 
-    await supabase.from("organization_members").upsert({
-      tenant_id: tenantId,
-      organization_id: org.id,
-      profile_id: corpOwner.id,
-      role_title: "Managing Director",
-      is_signatory: true,
-      approval_threshold: 250000,
-      status: "active",
-    });
+    const { data: existingMember } = await supabase
+      .from("organization_members")
+      .select("id")
+      .eq("organization_id", org.id)
+      .eq("profile_id", corpOwner.id)
+      .maybeSingle();
+    if (!existingMember) {
+      await supabase.from("organization_members").insert({
+        tenant_id: tenantId,
+        organization_id: org.id,
+        profile_id: corpOwner.id,
+        role_title: "Managing Director",
+        is_signatory: true,
+        approval_threshold: 250000,
+        status: "active",
+      });
+    }
 
     const product = byCode["CORP_USD"];
-    await supabase.from("accounts").insert({
-      tenant_id: tenantId,
-      account_no: "9900112233",
-      iban: makeIban("AE", "9900112233"),
-      swift_bic: "CAPTAEXX",
-      product_id: product.id,
-      coa_account_id: product.coa_account_id,
-      owner_type: "organization",
-      owner_id: org.id,
-      currency: "USD",
-      status: "active",
-      nickname: "Operating",
-      ledger_balance: 152340.9,
-      available_balance: 152340.9,
-    });
-    console.log("corporate account: 9900112233 USD");
+    const { data: existingCorpAcct } = await supabase
+      .from("accounts")
+      .select("id")
+      .eq("account_no", "9900112233")
+      .maybeSingle();
+    if (!existingCorpAcct) {
+      await supabase.from("accounts").insert({
+        tenant_id: tenantId,
+        account_no: "9900112233",
+        iban: makeIban("AE", "9900112233"),
+        swift_bic: "CAPTAEXX",
+        product_id: product.id,
+        coa_account_id: product.coa_account_id,
+        owner_type: "organization",
+        owner_id: org.id,
+        currency: "USD",
+        status: "active",
+        nickname: "Operating",
+        ledger_balance: 152340.9,
+        available_balance: 152340.9,
+      });
+      console.log("corporate account: 9900112233 USD");
+    }
   }
 
   /* --- COA-side balances mirror --- */
@@ -225,19 +248,27 @@ async function main() {
   /* --- cards --- */
   const { data: accounts } = await supabase.from("accounts").select("id, account_no").eq("owner_id", customer.id);
   const usdAccount = accounts.find((a) => a.account_no === "1002345678");
-  await supabase.from("cards").upsert([
+  const { data: existingCards } = await supabase.from("cards").select("last4");
+  const cardLast4s = new Set((existingCards ?? []).map((c) => c.last4));
+  const newCards = [
     { tenant_id: tenantId, account_id: usdAccount.id, customer_id: customer.id, brand: "visa", last4: "4242", token: `tok_${Math.random().toString(36).slice(2)}`, exp_month: 8, exp_year: 2030, status: "active", name_on_card: "JANE DOE", daily_limit: 2000 },
     { tenant_id: tenantId, account_id: usdAccount.id, customer_id: customer.id, brand: "mastercard", last4: "5518", token: `tok_${Math.random().toString(36).slice(2)}`, exp_month: 11, exp_year: 2029, status: "active", name_on_card: "JANE DOE", daily_limit: 500, frozen: true },
-  ], { onConflict: ["account_id", "last4"] });
-  console.log("cards: 2 virtual cards");
+  ].filter((c) => !cardLast4s.has(c.last4));
+  if (newCards.length) {
+    await supabase.from("cards").insert(newCards);
+    console.log("cards:", newCards.length, "virtual card(s)");
+  }
 
   /* --- deposits --- */
   const tdProduct = byCode["TD_USD"];
-  await supabase.from("deposits").upsert([
-    { tenant_id: tenantId, account_id: usdAccount.id, customer_id: customer.id, product_id: tdProduct.id, principal: 5000, currency: "USD", interest_rate: 4.25, term_days: 90, start_date: "2026-06-01", maturity_date: "2026-08-30", interest_accrued: 41.98, rollover: false, status: "active" },
-    { tenant_id: tenantId, account_id: usdAccount.id, customer_id: customer.id, product_id: tdProduct.id, principal: 2500, currency: "EUR", interest_rate: 3.1, term_days: 180, start_date: "2026-03-15", maturity_date: "2026-09-11", interest_accrued: 37.56, rollover: true, status: "active" },
-  ], { onConflict: ["account_id", "principal", "start_date"] });
-  console.log("deposits: 2 term deposits");
+  const { data: existingDeposits } = await supabase.from("deposits").select("id");
+  if (!existingDeposits?.length) {
+    await supabase.from("deposits").insert([
+      { tenant_id: tenantId, account_id: usdAccount.id, customer_id: customer.id, product_id: tdProduct.id, principal: 5000, currency: "USD", interest_rate: 4.25, term_days: 90, start_date: "2026-06-01", maturity_date: "2026-08-30", interest_accrued: 41.98, rollover: false, status: "active" },
+      { tenant_id: tenantId, account_id: usdAccount.id, customer_id: customer.id, product_id: tdProduct.id, principal: 2500, currency: "EUR", interest_rate: 3.1, term_days: 180, start_date: "2026-03-15", maturity_date: "2026-09-11", interest_accrued: 37.56, rollover: true, status: "active" },
+    ]);
+    console.log("deposits: 2 term deposits");
+  }
 
   /* --- notifications --- */
   await supabase.from("notifications").insert([
@@ -248,7 +279,7 @@ async function main() {
   console.log("notifications: seeded");
 
   console.log("\n✅ Seed complete.");
-  console.log("Sign in at http://localhost:3000/sign-in");
+  console.log("Sign in at http://localhost:3006/sign-in");
   console.log("  customer: jane@capitech.me / CapitechJane2026!");
   console.log("  staff:    admin@capitech.me / CapitechAdmin2026!");
 }

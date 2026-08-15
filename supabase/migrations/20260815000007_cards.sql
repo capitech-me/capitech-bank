@@ -95,7 +95,7 @@ begin
   end if;
 
   -- post to ledger: debit customer account (linked to card), credit fee income & interchange
-  select c.id into v_fee_income from public.coa_accounts where tenant_id = v_tenant and code = '4300';
+  select id into v_fee_income from public.coa_accounts where tenant_id = v_tenant and code = '4300';
 
   perform public.post_journal(
     'Card purchase — ' || p_merchant_name,

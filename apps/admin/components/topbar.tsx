@@ -23,7 +23,7 @@ export function Topbar({ userName, roleLabel }: TopbarProps) {
   async function handleSignOut() {
     const supabase = getBrowserClient();
     await supabase.auth.signOut();
-    const landingUrl = process.env.NEXT_PUBLIC_LANDING_URL ?? "http://localhost:3000";
+    const landingUrl = process.env.NEXT_PUBLIC_LANDING_URL ?? "http://localhost:3006";
     window.location.href = landingUrl;
   }
 
