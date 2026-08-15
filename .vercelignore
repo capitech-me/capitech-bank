@@ -1,0 +1,16 @@
+# Dependencies & build artifacts — never upload
+node_modules
+.next
+out
+.turbo
+.vercel
+
+# Local env files (secrets live in Vercel project settings)
+.env
+.env.local
+.env.*.local
+
+# Git & OS
+.git
+.DS_Store
+*.log
