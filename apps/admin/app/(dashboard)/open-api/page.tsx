@@ -57,7 +57,15 @@ export default function OpenApiPage() {
   }
 
   useEffect(() => {
-    load();
+    // Initial data fetch — setState happens in the promise callback (async).
+    fetch("/admin/api/openapi/list")
+      .then((r) => r.json())
+      .then((res) => {
+        setKeys(res.keys ?? []);
+        setEndpoints(res.endpoints ?? []);
+        setDeliveries(res.deliveries ?? []);
+        setLoading(false);
+      });
   }, []);
 
   async function createKey() {

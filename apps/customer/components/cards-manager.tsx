@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { CreditCard, Plus, Snowflake, Flame, Globe } from "lucide-react";
-import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Switch } from "@capitech/ui";
+import { Badge, Button, Card, CardContent, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Switch } from "@capitech/ui";
 import { formatMoney, formatCardExpiry } from "@capitech/lib";
 import { toast } from "@capitech/ui";
 import { cn } from "@capitech/ui";
@@ -39,7 +39,7 @@ function CreateCardDialog({ accountId }: { accountId: string }) {
     setLoading(true);
     if (isSupabaseConfigured()) {
       const supabase = getBrowserClient();
-      const { data: { user } } = await supabase.auth.getUser();
+      await supabase.auth.getUser();
       const last4 = Math.floor(1000 + Math.random() * 9000).toString();
       const { error } = await supabase.from("cards").insert({
         account_id: accountId,

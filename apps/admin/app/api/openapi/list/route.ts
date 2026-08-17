@@ -3,7 +3,7 @@ import { createServerClient } from "@capitech/db";
 import { cookies } from "next/headers";
 
 /** Admin — list API keys, webhook endpoints and recent deliveries. */
-export async function GET(req: Request) {
+export async function GET() {
   const cookieStore = await cookies();
   const supabase = await createServerClient({
     getAll: () => cookieStore.getAll(),

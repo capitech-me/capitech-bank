@@ -4,6 +4,17 @@ import { createAdminClient } from "@capitech/db";
 import { requireApiKey, ownerAccounts, apiError, enforceApiKeyQuota } from "../helpers";
 import { dispatchWebhooks } from "@capitech/openapi";
 
+interface TransferBody {
+  from_account_id?: string;
+  amount?: number;
+  currency?: string;
+  to_account_id?: string;
+  to_iban?: string;
+  reference?: string;
+  narration?: string;
+  to_beneficiary_name?: string;
+}
+
 /**
  * POST /api/open/v1/transfers — create a payment order.
  * Body: { from_account_id, amount, currency, to_account_id | to_iban, reference?, narration? }
@@ -17,8 +28,8 @@ export async function POST(req: NextRequest) {
   const limited = await enforceApiKeyQuota(req, ctx!);
   if (limited) return limited;
 
-  const body = await req.json().catch(() => ({}));
-  const { from_account_id, amount, currency, to_account_id, to_iban, reference, narration } = body as any;
+  const body = (await req.json().catch(() => ({}))) as TransferBody;
+  const { from_account_id, amount, currency, to_account_id, to_iban, reference, narration } = body;
 
   if (!from_account_id || !amount || !currency || (!to_account_id && !to_iban)) {
     return apiError("bad_request", 400, "from_account_id, amount, currency and a destination are required");
@@ -29,7 +40,7 @@ export async function POST(req: NextRequest) {
 
   // The source account must belong to the key owner
   const accounts = await ownerAccounts(ctx!);
-  const source = accounts.find((a: any) => a.id === from_account_id);
+  const source = accounts.find((a) => a.id === from_account_id);
   if (!source) return apiError("forbidden", 403, "from_account_id is not owned by this key");
   if (source.currency !== currency) return apiError("bad_request", 400, "currency does not match source account");
 

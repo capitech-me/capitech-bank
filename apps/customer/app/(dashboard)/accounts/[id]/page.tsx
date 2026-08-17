@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Copy, Wallet } from "lucide-react";
-import { formatMoney, formatIban, deriveBic, formatDate } from "@capitech/lib";
+import { formatMoney, formatIban, formatDate } from "@capitech/lib";
 import { Badge, Button } from "@capitech/ui";
 import { getAccount, getTransactions } from "@/lib/data";
 import { TransactionsCard } from "@/components/transaction-list";

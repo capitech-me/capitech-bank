@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { createAdminClient, withRateLimit } from "@capitech/db";
-import { authenticateApiKey, hasScope, SCOPES, type ApiKeyContext, type Scope } from "@capitech/openapi";
+import { authenticateApiKey, hasScope, type ApiKeyContext, type Scope } from "@capitech/openapi";
 
 /**
  * Shared Open API helpers: resolve the caller from the Bearer key,
@@ -77,8 +77,26 @@ export async function enforceApiKeyQuota(
   return null;
 }
 
+/** Row shape returned by `ownerAccounts` (as consumed by the Open API routes). */
+export interface OwnerAccountRow {
+  id: string;
+  account_no: string;
+  iban: string | null;
+  swift_bic: string | null;
+  currency: string;
+  status: string;
+  nickname: string | null;
+  ledger_balance: string | null;
+  available_balance: string | null;
+  frozen: boolean;
+  products:
+    | { name: string | null; product_type: string | null }
+    | { name: string | null; product_type: string | null }[]
+    | null;
+}
+
 /** Load the accounts owned by the key's owner. */
-export async function ownerAccounts(ctx: ApiKeyContext) {
+export async function ownerAccounts(ctx: ApiKeyContext): Promise<OwnerAccountRow[]> {
   const supabase = createAdminClient();
   const { data, error } = await supabase
     .from("accounts")

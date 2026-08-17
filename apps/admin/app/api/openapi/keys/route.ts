@@ -3,6 +3,13 @@ import { createServerClient } from "@capitech/db";
 import { cookies } from "next/headers";
 import { generateApiKey } from "@capitech/openapi";
 
+interface CreateApiKeyBody {
+  owner_type?: string;
+  owner_id?: string;
+  name?: string;
+  scopes?: string[];
+}
+
 /**
  * Admin — create an Open API key for a customer/organization.
  * POST { owner_type, owner_id, name, scopes } → returns the raw key ONCE.
@@ -32,9 +39,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
 
-  const body = (await req.json().catch(() => ({}))) as any;
+  const body = (await req.json().catch(() => ({}))) as CreateApiKeyBody;
   const { owner_type, owner_id, name, scopes } = body;
-  if (!["customer", "organization"].includes(owner_type) || !owner_id || !name) {
+  if (!owner_type || !["customer", "organization"].includes(owner_type) || !owner_id || !name) {
     return NextResponse.json({ error: "bad_request" }, { status: 400 });
   }
 

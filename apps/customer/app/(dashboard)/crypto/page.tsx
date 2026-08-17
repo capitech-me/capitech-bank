@@ -1,8 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Coins, Landmark, TrendingUp, CircleDollarSign, ArrowLeftRight, Loader2, Wallet } from "lucide-react";
-import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Tabs, TabsContent, TabsList, TabsTrigger } from "@capitech/ui";
+import { Coins, Landmark, TrendingUp, CircleDollarSign, ArrowLeftRight, Loader2, Wallet, type LucideIcon } from "lucide-react";
+import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Tabs, TabsList, TabsTrigger } from "@capitech/ui";
 import { toast } from "@capitech/ui";
 import { formatMoney } from "@capitech/lib";
 import { cn } from "@capitech/ui";
@@ -30,8 +30,15 @@ interface OrderRow {
   status: string;
   created_at: string;
 }
+interface FiatAccountRow {
+  id: string;
+  currency: string;
+  nickname: string | null;
+  available_balance: string;
+  products: { name?: string; product_type?: string } | { name?: string; product_type?: string }[] | null;
+}
 
-const ASSET_ICONS: Record<string, any> = {
+const ASSET_ICONS: Record<string, LucideIcon> = {
   BTC: CircleDollarSign,
   ETH: Landmark,
   SOL: Coins,
@@ -43,7 +50,7 @@ export default function CryptoPage() {
   const [wallets, setWallets] = useState<WalletRow[]>([]);
   const [orders, setOrders] = useState<OrderRow[]>([]);
   const [fiatAccounts, setFiatAccounts] = useState<{ id: string; label: string; currency: string; balance: string }[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
   const [priceStale, setPriceStale] = useState(false);
 
   const [side, setSide] = useState<"buy" | "sell">("buy");
@@ -72,31 +79,75 @@ export default function CryptoPage() {
       supabase.from("crypto_orders").select("*").order("created_at", { ascending: false }).limit(20),
       supabase.from("accounts").select("id, currency, nickname, available_balance, products(name)"),
     ]);
-    setWallets((w.data ?? []).map((r: any) => ({ asset: r.asset, balance: r.balance, address: r.address })));
-    setOrders((o.data ?? []).map((r: any) => ({ id: r.id, side: r.side, asset: r.asset, amount_fiat: r.amount_fiat, amount_asset: r.amount_asset, price: r.price, status: r.status, created_at: r.created_at })));
+    setWallets((w.data ?? []).map((r: WalletRow) => ({ asset: r.asset, balance: r.balance, address: r.address })));
+    setOrders((o.data ?? []).map((r: OrderRow) => ({ id: r.id, side: r.side, asset: r.asset, amount_fiat: r.amount_fiat, amount_asset: r.amount_asset, price: r.price, status: r.status, created_at: r.created_at })));
     setFiatAccounts(
       (acc.data ?? [])
-        .filter((a: any) => a.products?.[0]?.product_type === "current" || a.products?.product_type === "current")
-        .map((a: any) => ({
+        .filter((a: FiatAccountRow) => {
+          const products = a.products;
+          const isCurrent = (Array.isArray(products) ? products[0]?.product_type : products?.product_type) === "current";
+          return isCurrent;
+        })
+        .map((a: FiatAccountRow) => ({
           id: a.id,
           label: `${a.nickname ?? "Account"} · ${a.currency}`,
           currency: a.currency,
           balance: a.available_balance,
         }))
     );
-    if (!fiatAccount && (acc.data ?? []).length > 0) setFiatAccount((acc.data as any[])[0].id);
+    if (!fiatAccount && (acc.data ?? []).length > 0) setFiatAccount((acc.data ?? [])[0].id);
     setLoading(false);
   }, [fiatAccount]);
 
   useEffect(() => {
-    loadPrices();
-    const t = setInterval(loadPrices, 60_000);
+    // Poll live prices — setState happens inside the effect-local async fn (after await).
+    const pollPrices = async () => {
+      const res = await fetch("/app/api/crypto/prices?assets=BTC,ETH,SOL,USDT").then((r) => r.json());
+      const map: Record<string, PriceRow> = {};
+      for (const p of res.data ?? []) map[p.asset] = p;
+      setPrices(map);
+      setPriceStale(!!res.stale);
+    };
+    void pollPrices();
+    const t = setInterval(pollPrices, 60_000);
     return () => clearInterval(t);
-  }, [loadPrices]);
+  }, []);
 
   useEffect(() => {
-    loadData();
-  }, [loadData]);
+    // Initial load of wallets/orders/accounts — setState happens inside the effect-local async fn.
+    const loadDashboardData = async () => {
+      const supabase = getBrowserClient();
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) {
+        setLoading(false);
+        return;
+      }
+      const [w, o, acc] = await Promise.all([
+        supabase.from("crypto_wallets").select("asset, balance, address"),
+        supabase.from("crypto_orders").select("*").order("created_at", { ascending: false }).limit(20),
+        supabase.from("accounts").select("id, currency, nickname, available_balance, products(name)"),
+      ]);
+      setWallets((w.data ?? []).map((r: WalletRow) => ({ asset: r.asset, balance: r.balance, address: r.address })));
+      setOrders((o.data ?? []).map((r: OrderRow) => ({ id: r.id, side: r.side, asset: r.asset, amount_fiat: r.amount_fiat, amount_asset: r.amount_asset, price: r.price, status: r.status, created_at: r.created_at })));
+      setFiatAccounts(
+        (acc.data ?? [])
+          .filter((a: FiatAccountRow) => {
+            const products = a.products;
+            const isCurrent = (Array.isArray(products) ? products[0]?.product_type : products?.product_type) === "current";
+            return isCurrent;
+          })
+          .map((a: FiatAccountRow) => ({
+            id: a.id,
+            label: `${a.nickname ?? "Account"} · ${a.currency}`,
+            currency: a.currency,
+            balance: a.available_balance,
+          }))
+      );
+      if (!fiatAccount && (acc.data ?? []).length > 0) setFiatAccount((acc.data ?? [])[0].id);
+      setLoading(false);
+    };
+    void loadDashboardData();
+  }, [fiatAccount]);
 
   const price = Number(prices[asset]?.price_usd ?? 0);
   const wallet = wallets.find((w) => w.asset === asset);

@@ -1,12 +1,10 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import {
   Bell,
   ChevronDown,
   LogOut,
   ShieldCheck,
-  UserCircle2,
   Settings,
 } from "lucide-react";
 import {
@@ -30,8 +28,6 @@ interface TopbarProps {
 }
 
 export function Topbar({ userName, userEmail, unreadCount, mfaEnabled }: TopbarProps) {
-  const router = useRouter();
-
   async function handleSignOut() {
     const supabase = getBrowserClient();
     await supabase.auth.signOut();

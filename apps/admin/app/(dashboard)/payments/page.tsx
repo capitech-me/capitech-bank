@@ -1,6 +1,5 @@
 import { formatRelativeTime, formatMoney, humanize } from "@capitech/lib";
 import { getApprovals } from "@/lib/data";
-import { StatusBadge } from "@/components/status-badge";
 import { ApprovePaymentButton } from "@/components/approve-payment-button";
 
 export default async function PaymentsPage() {

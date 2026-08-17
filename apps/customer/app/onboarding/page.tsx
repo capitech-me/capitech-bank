@@ -10,7 +10,7 @@ import {
   FileUp,
   User,
 } from "lucide-react";
-import { Alert, AlertDescription, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Textarea } from "@capitech/ui";
+import { Alert, AlertDescription, Button, Card, CardContent, CardDescription, CardTitle, Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@capitech/ui";
 import { toast } from "@capitech/ui";
 import { cn } from "@capitech/ui";
 import { COUNTRIES } from "@capitech/lib";
@@ -140,8 +140,8 @@ export default function OnboardingPage() {
             });
           }
         }
-      } catch (err: any) {
-        toast.error(err.message ?? "Submission failed");
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Submission failed");
         setSubmitting(false);
         return;
       }

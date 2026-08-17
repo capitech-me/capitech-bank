@@ -13,7 +13,6 @@ import { cookies } from "next/headers";
  * CoinGecko fetch.
  */
 
-const CACHE_TTL_MS = 60_000; // 60s
 const COINGECKO = "https://api.coingecko.com/api/v3/simple/price";
 
 // Rate limit for anonymous reads (S-7).

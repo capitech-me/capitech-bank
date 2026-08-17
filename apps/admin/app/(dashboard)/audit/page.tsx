@@ -1,4 +1,4 @@
-import { formatDateTime, humanize } from "@capitech/lib";
+import { formatDateTime } from "@capitech/lib";
 import { getAuditLog } from "@/lib/data";
 
 export default async function AuditPage() {

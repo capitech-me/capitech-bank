@@ -7,6 +7,32 @@ interface RouteContext {
   params: Promise<{ id: string }>;
 }
 
+interface PaymentOrderRow {
+  id: string;
+  tx_type: string;
+  status: string;
+  amount: string;
+  currency: string;
+  from_account_id: string | null;
+  to_account_id: string | null;
+  reference: string | null;
+  order_no: string;
+  narration: string | null;
+  created_at: string;
+}
+
+interface CardTransactionRow {
+  id: string;
+  tx_type: string;
+  status: string;
+  amount: string;
+  currency: string;
+  mcc: string | null;
+  merchant_name: string | null;
+  created_at: string;
+  cards: { account_id: string } | null;
+}
+
 /** GET /api/open/v1/accounts/[id] — account detail (owner-scoped). */
 export async function GET(req: NextRequest, { params }: RouteContext) {
   const { id } = await params;
@@ -17,7 +43,7 @@ export async function GET(req: NextRequest, { params }: RouteContext) {
   if (limited) return limited;
 
   const accounts = await ownerAccounts(ctx!);
-  const account = accounts.find((a: any) => a.id === id);
+  const account = accounts.find((a) => a.id === id);
   if (!account) return apiError("not_found", 404);
 
   return NextResponse.json({ data: account });
@@ -33,7 +59,7 @@ export async function transactions(req: NextRequest, { params }: RouteContext) {
   if (limited) return limited;
 
   const accounts = await ownerAccounts(ctx!);
-  const account = accounts.find((a: any) => a.id === id);
+  const account = accounts.find((a) => a.id === id);
   if (!account) return apiError("not_found", 404);
 
   const supabase = createAdminClient();
@@ -52,8 +78,8 @@ export async function transactions(req: NextRequest, { params }: RouteContext) {
   ]);
 
   const txs = (orders.data ?? [])
-    .filter((o: any) => o.from_account_id === id || o.to_account_id === id)
-    .map((o: any) => ({
+    .filter((o: PaymentOrderRow) => o.from_account_id === id || o.to_account_id === id)
+    .map((o: PaymentOrderRow) => ({
       id: o.id,
       type: o.tx_type,
       status: o.status,
@@ -66,8 +92,8 @@ export async function transactions(req: NextRequest, { params }: RouteContext) {
     }))
     .concat(
       (cardTx.data ?? [])
-        .filter((c: any) => c.cards?.account_id === id)
-        .map((c: any) => ({
+        .filter((c: CardTransactionRow) => c.cards?.account_id === id)
+        .map((c: CardTransactionRow) => ({
           id: c.id,
           type: c.tx_type,
           status: c.status,

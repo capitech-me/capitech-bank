@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, CreditCard, PiggyBank, Wallet } from "lucide-react";
+import { CreditCard, PiggyBank, Wallet } from "lucide-react";
 import { formatMoney, formatPercent, formatDate, maskCard } from "@capitech/lib";
 import { Badge } from "@capitech/ui";
 import { BalanceCards, QuickActions } from "@/components/balance-cards";

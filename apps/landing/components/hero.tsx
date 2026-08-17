@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, ShieldCheck, Globe2, Zap, Landmark } from "lucide-react";
+import { ArrowRight, ShieldCheck, Globe2, Zap } from "lucide-react";
 import { Button } from "@capitech/ui";
 
 const STATS = [

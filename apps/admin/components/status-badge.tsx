@@ -13,7 +13,7 @@ export function StatusBadge({ status }: { status: string }) {
           : status === "level_2" || status === "level_1"
             ? "info"
             : "neutral";
-  return <Badge variant={variant as any}>{humanize(status)}</Badge>;
+  return <Badge variant={variant}>{humanize(status)}</Badge>;
 }
 
 export function RiskBadge({ score }: { score: number }) {

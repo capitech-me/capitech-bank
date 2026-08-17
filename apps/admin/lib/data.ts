@@ -192,6 +192,97 @@ const demoAudit: AuditRow[] = [
    Data access
    ============================================================ */
 
+/** Row shapes (as consumed) for the Supabase queries below. */
+interface CustomersRow {
+  id: string;
+  customer_no: string;
+  legal_first_name: string;
+  legal_last_name: string;
+  customer_type: "retail" | "corporate";
+  country_of_residence: string;
+  kyc_status: string;
+  kyc_level?: string;
+  risk_score: number;
+  is_pep: boolean;
+  created_at: string;
+}
+
+interface AccountsRow {
+  id: string;
+  account_no: string;
+  owner_id: string;
+  currency: string;
+  status: string;
+  frozen: boolean;
+  created_at: string;
+  products:
+    | { name?: string; product_type?: string }
+    | { name?: string; product_type?: string }[]
+    | null;
+}
+
+interface CoaRowInput {
+  code: string;
+  name: string;
+  category: string;
+  normal_side: string;
+  currency: string;
+  active: boolean;
+}
+
+interface GlEntryRow {
+  id: string;
+  journal_no: string;
+  entry_date: string;
+  description: string;
+  reference_id: string;
+  status: string;
+  created_by: string;
+}
+
+interface PaymentOrderRow {
+  id: string;
+  order_no: string;
+  tx_type: string;
+  amount: string;
+  currency: string;
+  from_account_id: string;
+  to_iban: string;
+  to_account_id: string;
+  status: string;
+  created_at: string;
+  created_by: string;
+}
+
+interface ProductRowInput {
+  id: string;
+  code: string;
+  name: string;
+  product_type: string;
+  currency: string;
+  interest_rate: string;
+  monthly_fee: string;
+  status: string;
+}
+
+interface ProfileRow {
+  id: string;
+  first_name: string;
+  last_name: string;
+  role: string;
+}
+
+interface OperationLogRow {
+  id: string;
+  actor_id: string;
+  action: string;
+  entity_type: string;
+  entity_id: string;
+  details: string;
+  ip_address: string;
+  created_at: string;
+}
+
 export async function getKycQueue(): Promise<KycQueueItem[]> {
   if (!isSupabaseConfigured()) return demoKycQueue;
   const supabase = await getServerClient();
@@ -201,7 +292,7 @@ export async function getKycQueue(): Promise<KycQueueItem[]> {
     .eq("kyc_status", "pending")
     .order("created_at", { ascending: false });
   if (error || !data) return demoKycQueue;
-  return data.map((row: any) => ({
+  return data.map((row: CustomersRow) => ({
     id: row.id,
     customerNo: row.customer_no,
     name: [row.legal_first_name, row.legal_last_name].filter(Boolean).join(" ") || "Unknown",
@@ -218,13 +309,13 @@ export async function getCustomers(): Promise<CustomerRow[]> {
   const supabase = await getServerClient();
   const { data, error } = await supabase.from("customers").select("*").order("created_at", { ascending: false }).limit(100);
   if (error || !data) return demoCustomers;
-  return data.map((row: any) => ({
+  return data.map((row: CustomersRow) => ({
     id: row.id,
     customerNo: row.customer_no,
     name: [row.legal_first_name, row.legal_last_name].filter(Boolean).join(" ") || "Unknown",
     type: row.customer_type,
     kycStatus: row.kyc_status,
-    kycLevel: row.kyc_level,
+    kycLevel: row.kyc_level ?? "",
     country: row.country_of_residence,
     riskScore: row.risk_score,
     createdAt: row.created_at,
@@ -236,17 +327,20 @@ export async function getAccounts(): Promise<AccountRow[]> {
   const supabase = await getServerClient();
   const { data, error } = await supabase.from("accounts").select("*, products(name, product_type)").order("created_at", { ascending: false }).limit(100);
   if (error || !data) return demoAccounts;
-  return data.map((row: any) => ({
-    id: row.id,
-    accountNo: row.account_no,
-    owner: row.owner_id,
-    product: row.products?.name ?? "Account",
-    currency: row.currency,
-    balance: "0",
-    status: row.status,
-    frozen: row.frozen,
-    createdAt: row.created_at,
-  }));
+  return data.map((row: AccountsRow) => {
+    const product = Array.isArray(row.products) ? row.products[0] : row.products;
+    return {
+      id: row.id,
+      accountNo: row.account_no,
+      owner: row.owner_id,
+      product: product?.name ?? "Account",
+      currency: row.currency,
+      balance: "0",
+      status: row.status,
+      frozen: row.frozen,
+      createdAt: row.created_at,
+    };
+  });
 }
 
 export async function getCoa(): Promise<CoaRow[]> {
@@ -254,7 +348,7 @@ export async function getCoa(): Promise<CoaRow[]> {
   const supabase = await getServerClient();
   const { data, error } = await supabase.from("coa_accounts").select("*").order("code");
   if (error || !data) return demoCoa;
-  return data.map((row: any) => ({
+  return data.map((row: CoaRowInput) => ({
     code: row.code,
     name: row.name,
     category: row.category,
@@ -270,7 +364,7 @@ export async function getJournals(): Promise<JournalRow[]> {
   const supabase = await getServerClient();
   const { data, error } = await supabase.from("gl_entries").select("*").order("entry_date", { ascending: false }).limit(50);
   if (error || !data) return demoJournals;
-  return data.map((row: any) => ({
+  return data.map((row: GlEntryRow) => ({
     id: row.id,
     journalNo: row.journal_no,
     entryDate: row.entry_date,
@@ -286,7 +380,7 @@ export async function getApprovals(): Promise<ApprovalRow[]> {
   const supabase = await getServerClient();
   const { data, error } = await supabase.from("payment_orders").select("*").eq("status", "pending").order("created_at", { ascending: false }).limit(50);
   if (error || !data) return demoApprovals;
-  return data.map((row: any) => ({
+  return data.map((row: PaymentOrderRow) => ({
     id: row.id,
     orderNo: row.order_no,
     txType: row.tx_type,
@@ -305,7 +399,7 @@ export async function getProducts(): Promise<ProductRow[]> {
   const supabase = await getServerClient();
   const { data, error } = await supabase.from("products").select("*").order("code");
   if (error || !data) return demoProducts;
-  return data.map((row: any) => ({
+  return data.map((row: ProductRowInput) => ({
     id: row.id,
     code: row.code,
     name: row.name,
@@ -322,7 +416,7 @@ export async function getStaff(): Promise<StaffRow[]> {
   const supabase = await getServerClient();
   const { data, error } = await supabase.from("profiles").select("id, first_name, last_name, role").in("role", ["staff_teller", "staff_operations", "staff_compliance", "staff_accountant", "staff_admin", "super_admin"]);
   if (error || !data) return demoStaff;
-  return data.map((row: any) => ({
+  return data.map((row: ProfileRow) => ({
     id: row.id,
     name: [row.first_name, row.last_name].filter(Boolean).join(" ") || "Unknown",
     email: "",
@@ -337,7 +431,7 @@ export async function getAuditLog(): Promise<AuditRow[]> {
   const supabase = await getServerClient();
   const { data, error } = await supabase.from("operation_logs").select("*").order("created_at", { ascending: false }).limit(100);
   if (error || !data) return demoAudit;
-  return data.map((row: any) => ({
+  return data.map((row: OperationLogRow) => ({
     id: row.id,
     actor: row.actor_id ?? "system",
     action: row.action,

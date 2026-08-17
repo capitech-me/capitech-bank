@@ -95,7 +95,7 @@ export function Security() {
                 ))}
               </div>
               <div className="mt-6 rounded-lg border border-white/10 bg-white/5 p-4 font-mono text-xs text-navy-300">
-                <p className="text-navy-400">// double-entry ledger — balance check</p>
+                <p className="text-navy-400">{"// double-entry ledger — balance check"}</p>
                 <p>DEBIT&nbsp;&nbsp;2000 (Customer Deposits)&nbsp;&nbsp;500.00</p>
                 <p>CREDIT&nbsp;&nbsp;1000 (Nostro)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;500.00</p>
                 <p className="mt-1 text-emerald-400">✓ debits = credits — entry posted</p>

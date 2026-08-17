@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { CheckCircle2, Bell, ShieldCheck, CreditCard, Info } from "lucide-react";
-import { Badge, Button } from "@capitech/ui";
+import { Badge } from "@capitech/ui";
 import { formatRelativeTime } from "@capitech/lib";
 import { getNotifications } from "@/lib/data";
 import { MarkNotificationsRead } from "@/components/mark-notifications-read";

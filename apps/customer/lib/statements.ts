@@ -29,7 +29,6 @@ export interface StatementData {
 }
 
 const NAVY = rgb(0.043, 0.071, 0.125);
-const BLUE = rgb(0.145, 0.34, 0.92);
 const MUTED = rgb(0.39, 0.45, 0.55);
 const GRAY = rgb(0.58, 0.64, 0.72);
 const LIGHT = rgb(0.945, 0.96, 0.975);
@@ -76,7 +75,7 @@ export async function buildPdf(data: StatementData): Promise<Uint8Array> {
   page.drawText(`Period: ${data.periodStart} - ${data.periodEnd}`, { x: width - MARGIN - 180, y: height - 44, size: 8, font, color: rgb(0.53, 0.59, 0.68) });
 
   /* ---- Account summary ---- */
-  let y = height - 130;
+  const y = height - 130;
   page.drawText(`Account: ${data.accountLabel}`, { x: MARGIN, y, size: 11, font: bold, color: NAVY });
   page.drawText(`Number ${data.accountNo} · ${data.iban} · ${data.currency}`, { x: MARGIN, y: y - 16, size: 9, font, color: MUTED });
 

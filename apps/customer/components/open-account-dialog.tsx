@@ -18,7 +18,10 @@ function OpenAccountDialogInner() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (searchParams.get("open") === "1") setOpen(true);
+    const syncOpenFromUrl = () => {
+      if (searchParams.get("open") === "1") setOpen(true);
+    };
+    syncOpenFromUrl();
   }, [searchParams]);
 
   async function handleCreate() {

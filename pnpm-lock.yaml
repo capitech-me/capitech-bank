@@ -210,6 +210,9 @@ importers:
         specifier: ^3.24.0
         version: 3.25.76
     devDependencies:
+      '@types/node':
+        specifier: ^20.19.43
+        version: 20.19.43
       typescript:
         specifier: ^5.7.0
         version: 5.9.3
@@ -220,6 +223,9 @@ importers:
         specifier: ^4.8.0
         version: 4.8.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
     devDependencies:
+      '@types/node':
+        specifier: ^20.19.43
+        version: 20.19.43
       typescript:
         specifier: ^5.7.0
         version: 5.9.3
@@ -236,6 +242,9 @@ importers:
         specifier: workspace:*
         version: link:../db
     devDependencies:
+      '@types/node':
+        specifier: ^20.19.43
+        version: 20.19.43
       typescript:
         specifier: ^5.7.0
         version: 5.9.3

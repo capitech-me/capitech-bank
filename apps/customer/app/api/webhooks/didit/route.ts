@@ -21,6 +21,17 @@ const EVENT_RATE_LIMIT = 30;
 const EVENT_RATE_WINDOW_MS = 60_000;
 const MAX_EVENT_ID_LENGTH = 200;
 
+/** Shape of the Didit webhook payload fields we consume (validated at runtime below). */
+interface DiditWebhookPayload {
+  event_id: string;
+  status: string;
+  session_id?: string;
+  webhook_type?: string;
+  decision?: string | null;
+  vendor_data?: string;
+  metadata?: { user_id?: string };
+}
+
 // Whole-number floats (1.0) -> integers (1), recursively — matches Didit's canonicalisation.
 function shortenFloats(v: unknown): unknown {
   if (Array.isArray(v)) return v.map(shortenFloats);
@@ -62,9 +73,9 @@ export async function POST(req: Request) {
   }
 
   // 2. Canonicalise: shortenFloats → sortKeys → JSON.stringify (unescaped Unicode, JS default).
-  let parsed: any;
+  let parsed: DiditWebhookPayload;
   try {
-    parsed = JSON.parse(raw);
+    parsed = JSON.parse(raw) as DiditWebhookPayload;
   } catch {
     return new Response("bad body", { status: 400 });
   }

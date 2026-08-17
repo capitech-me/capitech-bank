@@ -2,7 +2,6 @@ import { getServerClient } from "./supabase-server";
 import { isSupabaseConfigured } from "./supabase-browser";
 import {
   generateIban,
-  generateAccountNumber,
   deriveBic,
   formatRelativeTime,
   TX_TYPES,
@@ -181,6 +180,88 @@ const demoNotifications: NotificationVM[] = [
    Data access — real Supabase when configured, demo otherwise
    ============================================================ */
 
+/** Row shapes (as consumed) for the Supabase queries below. */
+interface AccountsRow {
+  id: string;
+  account_no: string;
+  iban: string;
+  swift_bic: string;
+  currency: string;
+  status: string;
+  nickname: string | null;
+  frozen: boolean;
+  opened_at: string;
+  products:
+    | { name?: string; product_type?: string }
+    | { name?: string; product_type?: string }[]
+    | null;
+  balances:
+    | { ledger_balance?: string; available_balance?: string }
+    | { ledger_balance?: string; available_balance?: string }[]
+    | null;
+}
+
+interface PaymentOrderRow {
+  id: string;
+  tx_type: string;
+  status: string;
+  amount: string;
+  currency: string;
+  to_beneficiary_name: string;
+  reference: string;
+  order_no: string;
+  narration: string;
+  created_at: string;
+}
+
+interface CardsRow {
+  id: string;
+  brand: string;
+  last4: string;
+  exp_month: number;
+  exp_year: number;
+  status: string;
+  frozen: boolean;
+  online_enabled: boolean;
+  daily_limit: string;
+  name_on_card: string;
+  account_id: string;
+}
+
+interface DepositsRow {
+  id: string;
+  principal: string;
+  currency: string;
+  interest_rate: string;
+  term_days: number;
+  start_date: string;
+  maturity_date: string;
+  interest_accrued: string;
+  rollover: boolean;
+  status: string;
+}
+
+interface ProductsRow {
+  id: string;
+  code: string;
+  name: string;
+  product_type: string;
+  currency: string;
+  interest_rate: string;
+  min_opening_balance: string;
+  monthly_fee: string;
+  description: string;
+}
+
+interface NotificationsRow {
+  id: string;
+  type: string;
+  title: string;
+  body: string;
+  read: boolean;
+  created_at: string;
+}
+
 export async function getAccounts(): Promise<AccountVM[]> {
   if (!isSupabaseConfigured()) return demoAccounts;
   const supabase = await getServerClient();
@@ -189,21 +270,25 @@ export async function getAccounts(): Promise<AccountVM[]> {
     .select("*, products(name, product_type), balances(ledger_balance, available_balance)")
     .order("created_at", { ascending: false });
   if (error || !data) return demoAccounts;
-  return data.map((row: any) => ({
-    id: row.id,
-    accountNo: row.account_no,
-    iban: row.iban ?? "",
-    bic: row.swift_bic ?? "",
-    productName: row.products?.name ?? "Account",
-    productType: row.products?.product_type ?? "current",
-    currency: row.currency,
-    status: row.status,
-    nickname: row.nickname,
-    ledgerBalance: row.balances?.ledger_balance ?? "0",
-    availableBalance: row.balances?.available_balance ?? "0",
-    frozen: row.frozen,
-    openedAt: row.opened_at,
-  }));
+  return data.map((row: AccountsRow) => {
+    const product = Array.isArray(row.products) ? row.products[0] : row.products;
+    const balance = Array.isArray(row.balances) ? row.balances[0] : row.balances;
+    return {
+      id: row.id,
+      accountNo: row.account_no,
+      iban: row.iban ?? "",
+      bic: row.swift_bic ?? "",
+      productName: product?.name ?? "Account",
+      productType: product?.product_type ?? "current",
+      currency: row.currency,
+      status: row.status,
+      nickname: row.nickname,
+      ledgerBalance: balance?.ledger_balance ?? "0",
+      availableBalance: balance?.available_balance ?? "0",
+      frozen: row.frozen,
+      openedAt: row.opened_at,
+    };
+  });
 }
 
 export async function getAccount(id: string): Promise<AccountVM | null> {
@@ -220,7 +305,7 @@ export async function getTransactions(accountId?: string): Promise<TransactionVM
   if (accountId) query = query.eq("from_account_id", accountId);
   const { data, error } = await query;
   if (error || !data) return demoTransactions;
-  return data.map((row: any) => ({
+  return data.map((row: PaymentOrderRow) => ({
     id: row.id,
     txType: row.tx_type,
     status: row.status,
@@ -239,7 +324,7 @@ export async function getCards(): Promise<CardVM[]> {
   const supabase = await getServerClient();
   const { data, error } = await supabase.from("cards").select("*").order("created_at", { ascending: false });
   if (error || !data) return demoCards;
-  return data.map((row: any) => ({
+  return data.map((row: CardsRow) => ({
     id: row.id,
     brand: row.brand,
     last4: row.last4,
@@ -259,7 +344,7 @@ export async function getDeposits(): Promise<DepositVM[]> {
   const supabase = await getServerClient();
   const { data, error } = await supabase.from("deposits").select("*").order("created_at", { ascending: false });
   if (error || !data) return demoDeposits;
-  return data.map((row: any) => ({
+  return data.map((row: DepositsRow) => ({
     id: row.id,
     principal: row.principal,
     currency: row.currency,
@@ -278,7 +363,7 @@ export async function getProducts(): Promise<ProductVM[]> {
   const supabase = await getServerClient();
   const { data, error } = await supabase.from("products").select("*").eq("status", "active");
   if (error || !data) return demoProducts;
-  return data.map((row: any) => ({
+  return data.map((row: ProductsRow) => ({
     id: row.id,
     code: row.code,
     name: row.name,
@@ -296,7 +381,7 @@ export async function getNotifications(): Promise<NotificationVM[]> {
   const supabase = await getServerClient();
   const { data, error } = await supabase.from("notifications").select("*").order("created_at", { ascending: false }).limit(20);
   if (error || !data) return demoNotifications;
-  return data.map((row: any) => ({
+  return data.map((row: NotificationsRow) => ({
     id: row.id,
     type: row.type,
     title: row.title,

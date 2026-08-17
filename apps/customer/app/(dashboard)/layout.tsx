@@ -8,7 +8,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   let userName = "Customer";
   let userEmail = "customer@capitech.me";
   let unreadCount = 2;
-  let mfaEnabled = false;
+  const mfaEnabled = false;
 
   if (isSupabaseConfigured()) {
     const supabase = await getServerClient();

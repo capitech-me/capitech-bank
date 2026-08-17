@@ -1,0 +1,102 @@
+# Capitech Bank — CI pipeline
+#
+# Jobs:
+#   quality — Gated on every push / PR to master: lint, typecheck, and a
+#             sequential build across the monorepo (Turborepo).
+#   e2e     — Manual Playwright run (workflow_dispatch only). Never blocks
+#             pushes/PRs. Boots the 3 Next.js apps via playwright.config.ts
+#             and runs the full suite in demo mode (no secrets required).
+
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+  workflow_dispatch: {}
+
+# Cancel in-flight runs for the same ref when a new commit lands, so queued
+# runs of an outdated ref don't waste runner minutes.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    name: Quality (lint, typecheck, build)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      # Full history lets Turborepo use git metadata / remote caching.
+      - name: Checkout with full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Install pnpm first so setup-node can resolve and cache it via the lockfile.
+      - name: Set up pnpm 11.9.0 (matches packageManager field)
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.9.0
+
+      - name: Set up Node.js 22 LTS (cached via pnpm-lock.yaml)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies (frozen lockfile)
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint all apps and packages (turbo)
+        run: pnpm lint
+
+      - name: Typecheck all apps and packages (turbo)
+        run: pnpm typecheck
+
+      - name: Typecheck Playwright e2e specs
+        run: pnpm exec tsc --noEmit -p e2e/tsconfig.json
+
+      # Sequential build: parallel Turbopack builds can flake while downloading
+      # Google Fonts (fonts.gstatic.com), so force --concurrency=1.
+      - name: Build all apps sequentially (turbo)
+        run: pnpm exec turbo build --concurrency=1
+
+  e2e:
+    name: E2E (Playwright, manual)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm 11.9.0 (matches packageManager field)
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.9.0
+
+      - name: Set up Node.js 22 LTS (cached via pnpm-lock.yaml)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies (frozen lockfile)
+        run: pnpm install --frozen-lockfile
+
+      # --with-deps installs Chromium plus its OS dependencies (apt via sudo,
+      # available on ubuntu-latest runners).
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      # playwright.config.ts boots landing (:3006), customer (:3001) and
+      # admin (:3002) via its webServer array (reuseExistingServer: true).
+      # With E2E_LIVE unset the suite runs in demo mode — no secrets needed.
+      - name: Run e2e suite
+        run: pnpm test:e2e
