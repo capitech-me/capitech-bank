@@ -8,9 +8,8 @@ import { Button, Logo } from "@capitech/ui";
 const NAV_LINKS = [
   { href: "#personal", label: "Personal" },
   { href: "#business", label: "Business" },
-  { href: "#corporate", label: "Corporate" },
   { href: "#features", label: "Features" },
-  { href: "#pricing", label: "Pricing" },
+  { href: "#developers", label: "Developers" },
   { href: "#faq", label: "FAQ" },
 ];
 

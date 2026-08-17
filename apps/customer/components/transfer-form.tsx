@@ -30,19 +30,17 @@ export function TransferForm({ accounts }: { accounts: AccountVM[] }) {
 
     if (isSupabaseConfigured()) {
       const supabase = getBrowserClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      const { error } = await supabase.from("payment_orders").insert({
-        tx_type: toAccount.length >= 6 && toAccount.length <= 34 && /^\d+$/.test(toAccount.replace(/\s/g, ""))
-          ? "internal_transfer"
-          : "withdrawal",
-        status: "pending",
-        amount: parseAmount(amount),
-        currency: selectedAccount.currency,
-        from_account_id: fromAccount,
-        to_iban: toAccount.replace(/\s/g, ""),
-        narration: narration || null,
-        reference: reference || null,
-        created_by: user?.id,
+      // Customers can only create internal-transfer orders (never deposit/withdrawal).
+      // create_payment derives tenant/created_by server-side and always starts the
+      // order as 'pending'; funds move only when staff call execute_payment.
+      const { error } = await supabase.rpc("create_payment", {
+        p_tx_type: "internal_transfer",
+        p_amount: parseAmount(amount),
+        p_currency: selectedAccount.currency,
+        p_from_account_id: fromAccount,
+        p_to_iban: toAccount.replace(/\s/g, ""),
+        p_reference: reference || null,
+        p_narration: narration || null,
       });
       if (error) {
         toast.error(error.message);

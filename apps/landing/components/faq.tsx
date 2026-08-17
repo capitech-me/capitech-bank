@@ -32,7 +32,7 @@ const FAQS = [
   },
   {
     q: "Can businesses integrate with the Open API?",
-    a: "Absolutely. Business and Corporate clients get access to our REST API, webhooks and a sandbox environment. Endpoints follow ISO 20022-style message semantics and are secured with scoped API keys.",
+    a: "Absolutely. Business clients and developers get access to our REST API, webhooks and a sandbox environment. Endpoints follow ISO 20022-style message semantics and are secured with scoped API keys.",
   },
   {
     q: "How do I close my account?",

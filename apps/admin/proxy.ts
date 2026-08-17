@@ -42,12 +42,21 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // Only staff roles may use the back office
-  const { data: profile } = await supabase.from("profiles").select("role").maybeSingle();
+  // Only staff roles may use the back office.
+  // If the profile lookup fails, fail closed and send to sign-in rather than crash.
+  let profile: { role?: string | null } | null = null;
+  try {
+    const { data } = await supabase.from("profiles").select("role").maybeSingle();
+    profile = data;
+  } catch {
+    const url = new URL("/sign-in", LANDING_URL);
+    return NextResponse.redirect(url);
+  }
+
   const role = profile?.role;
   const isStaff = role && (role.startsWith("staff_") || role === "super_admin");
   if (!isStaff) {
-    const url = new URL("/", LANDING_URL);
+    const url = new URL("/sign-in", LANDING_URL);
     return NextResponse.redirect(url);
   }
 

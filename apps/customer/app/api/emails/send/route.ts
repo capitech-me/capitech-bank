@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createServerClient } from "@capitech/db";
+import { createServerClient, withRateLimit } from "@capitech/db";
 import { cookies } from "next/headers";
 import {
   cardEmail,
@@ -26,7 +26,14 @@ const ALLOWED_TYPES = [
 
 type EmailType = (typeof ALLOWED_TYPES)[number];
 
+// Email delivery costs money — cap abuse per IP (S-7).
+const RATE_LIMIT = 10;
+const RATE_WINDOW_MS = 60_000;
+
 export async function POST(req: Request) {
+  const limited = withRateLimit(req, RATE_LIMIT, RATE_WINDOW_MS);
+  if (limited) return limited;
+
   const cookieStore = await cookies();
   const supabase = await createServerClient({
     getAll: () => cookieStore.getAll(),

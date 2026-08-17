@@ -13,13 +13,26 @@ export function ApprovePaymentButton({ orderId }: { orderId: string }) {
     setBusy(action);
     if (isSupabaseConfigured()) {
       const supabase = getBrowserClient();
-      const { error } = await supabase
-        .from("payment_orders")
-        .update({
-          status: action === "approve" ? "authorized" : "rejected",
-          approved_at: new Date().toISOString(),
-        })
-        .eq("id", orderId);
+      let error: { message: string } | null = null;
+
+      if (action === "approve") {
+        // Settle through the ledger: posts the journal and moves the order to 'posted'.
+        // Staff are privileged callers, so p_approve = true (skips maker-checker).
+        const res = await supabase.rpc("execute_payment", {
+          p_order_id: orderId,
+          p_approve: true,
+        });
+        error = res.error;
+      } else {
+        // Reject: payment_orders has no rejected_by/rejected_at columns, so only the
+        // status is flipped. The order never touches the ledger.
+        const res = await supabase
+          .from("payment_orders")
+          .update({ status: "rejected" })
+          .eq("id", orderId);
+        error = res.error;
+      }
+
       if (error) {
         toast.error(error.message);
         setBusy(null);
@@ -36,7 +49,7 @@ export function ApprovePaymentButton({ orderId }: { orderId: string }) {
         body: JSON.stringify({ orderId, decision: action }),
       }).catch(() => {});
     }
-    toast.success(action === "approve" ? "Payment authorised" : "Payment rejected");
+    toast.success(action === "approve" ? "Payment approved and posted" : "Payment rejected");
     setBusy(null);
     window.location.reload();
   }

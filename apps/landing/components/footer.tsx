@@ -8,19 +8,17 @@ const COLUMNS = [
     links: [
       { label: "Personal", href: "#personal" },
       { label: "Business", href: "#business" },
-      { label: "Corporate", href: "#corporate" },
       { label: "Crypto", href: "#products" },
       { label: "Virtual cards", href: "#products" },
-      { label: "Term deposits", href: "#products" },
     ],
   },
   {
     title: "Developers",
     links: [
-      { label: "Open API", href: "#products" },
-      { label: "API documentation", href: "#products" },
-      { label: "Sandbox", href: "#products" },
-      { label: "Webhooks", href: "#products" },
+      { label: "Open API", href: "#developers" },
+      { label: "API documentation", href: "#developers" },
+      { label: "Sandbox", href: "#developers" },
+      { label: "Webhooks", href: "#developers" },
     ],
   },
   {

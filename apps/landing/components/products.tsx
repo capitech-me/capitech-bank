@@ -2,7 +2,6 @@ import Link from "next/link";
 import {
   User,
   Building2,
-  Landmark,
   Coins,
   CreditCard,
   PiggyBank,
@@ -30,15 +29,6 @@ const PRODUCTS = [
     description:
       "Banking built for founders and SMEs: separate accounts, expense control, team cards and API access from day one.",
     features: ["Business accounts & IBANs", "Team cards with limits", "Payroll & bulk payments", "Open API sandbox access"],
-  },
-  {
-    id: "corporate",
-    href: "/sign-up?type=corporate",
-    icon: Landmark,
-    title: "Corporate & Institutional",
-    description:
-      "Full treasury-grade platform: multi-currency liquidity, maker–checker controls, dedicated relationship support and reporting.",
-    features: ["Multi-entity & multi-currency", "Maker–checker approvals", "Treasury & FX desk", "Audit-ready reporting"],
   },
   {
     href: "/sign-up?type=retail",
@@ -88,8 +78,8 @@ export function Products() {
             Everything a modern bank should be
           </h2>
           <p className="mt-4 text-lg text-muted-foreground">
-            From personal everyday banking to institutional treasury — one platform,
-            every service, no legacy.
+            From everyday personal banking to business and developer tools — one
+            platform, every service, no legacy.
           </p>
         </div>
 

@@ -2,7 +2,7 @@
 
 > Maintained by HAKEM (PMO). Updated continuously as the build progresses.
 
-## Status: Phase 1 ✅ · Phase 2 ✅ · Multi-zone restructure ✅ deployed (online.capitech.me) — awaiting DNS + hotfix3 paste
+## Status: Phase 1 ✅ · Phase 2 ✅ · Multi-zone restructure ✅ deployed (online.capitech.me) — security + functional remediation (S-1..S-10, M-1..M-5, F-1..F-3) implemented in repo; awaiting DNS + apply-hotfix5.sql paste + E2E run
 
 ## Live topology (single domain)
 - **online.capitech.me** → landing (rewrites `/app/*` → customer, `/admin/*` → admin)
@@ -12,9 +12,9 @@
 
 ## ⏳ Remaining to go live
 1. **DNS**: `online.capitech.me → CNAME cname.vercel-dns.com` (or A 76.76.21.21) at registrar
-2. **Paste `supabase/apply-hotfix3.sql`** (execute_payment v_fee_lines uuid + execute_crypto_order gen_random_bytes) — unlocks transfer approval + crypto buy
+2. **Paste `supabase/apply-hotfix5.sql`** — consolidated security+functional bundle (supersedes hotfix3/4: execute_payment v_fee_lines uuid + authz, execute_crypto_order gen_random_bytes + server-side pricing, post_journal auth.uid() ownership, RLS column guards, storage/audit fixes)
 3. Resend: verify `capitech.me` sender domain (key works; DNS change also fixes this)
-4. Re-run full-flow E2E → expect 34/34
+4. Re-run full-flow E2E (`pnpm test:e2e`, Playwright suite now in `e2e/`) → expect 34/34
 
 ## Live environment
 - Supabase project: `hekufxbeigxzkyfsqalx` (connected, schema applied, seeded)
@@ -30,9 +30,10 @@
 | Crypto — CoinGecko prices (live verified), buy/sell UI, wallets, order history | ✅ built (needs migration 0012 for execute_crypto_order) |
 
 ## ⏳ Next action
-1. User pastes `supabase/apply-0012.sql` (Open API key ownership + post_journal ownership hardening + crypto engine)
-2. Deploy Phase 2 to Vercel ×3 + verify E2E (API key → open API call, crypto trade, statement PDF)
-3. Then DNS change → capitech.me live
+1. User pastes `supabase/apply-hotfix5.sql` (single consolidated bundle — security hardening + execute_payment/execute_crypto_order/post_journal fixes; supersedes apply-hotfix3.sql + apply-hotfix4.sql)
+2. Run E2E suite (`pnpm test:e2e`, 34 cases) + fix any failures
+3. Deploy Phase 2 + remediation to Vercel ×3 + verify (security headers, rate limits, admin proxy gating)
+4. Then DNS change → capitech.me live
 
 ---
 

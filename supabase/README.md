@@ -6,11 +6,16 @@ KYC, payments, virtual cards, term deposits, crypto (phase 2) and Open API (phas
 ## Structure
 
 ```
-migrations/   # versioned SQL migrations (apply in order, 0001 → 0010)
+migrations/   # versioned SQL migrations (apply in order, 0001 → 0013)
 functions/    # Edge Functions (Phase 2: crypto prices, emails, statements)
 seed/         # demo data scripts
 config.toml   # local dev config (supabase CLI)
 ```
+
+> **Hotfix bundles**: `apply-hotfix5.sql` is the CONSOLIDATED security/functional
+> paste bundle and supersedes `apply-hotfix3.sql` and `apply-hotfix4.sql` (and
+> the older `apply-hotfix*.sql` / `apply-0012.sql` / `apply-0013.sql` bundles).
+> Its content mirrors migration `20260816000013_security_hardening.sql`.
 
 ## Migration map
 
@@ -26,6 +31,9 @@ config.toml   # local dev config (supabase CLI)
 | 0008 | deposits | `deposits`, `open_deposit()`, `accrue_deposit_interest()`, `mature_deposits()` |
 | 0009 | operations | `notifications`, `operation_logs`, crypto + Open API tables, pg_cron jobs |
 | 0010 | rls_policies | Row-level security for every table + storage buckets |
+| 0011 | iban_standard | IBAN standardisation |
+| 0012 | openapi_crypto | API-key ownership, crypto price cache, `execute_crypto_order()` |
+| 0013 | security_hardening | Privilege-escalation/balance/KYC/authz fixes (S-1..S-6, S-9, M-1, M-4, L-1..L-3) — mirrors `apply-hotfix5.sql` |
 
 ## Apply to a remote Supabase project
 
@@ -66,3 +74,11 @@ supabase status       # shows local anon/service keys for .env.local
 - **Multi-tenancy**: all tables carry `tenant_id`; RLS scopes every read/write to the
   caller's tenant (see `current_tenant_id()`).
 - **Money**: fiat `numeric(20,2)`, COA balances `numeric(24,6)`, crypto `numeric(36,18)`.
+- **Audit logs (M-1)**: `operation_logs` writes are intentionally restricted to the
+  service role. The Didit webhook / app must call `log_operation()` with the
+  `SUPABASE_SERVICE_ROLE_KEY` (server-side), never from the browser.
+- **Privilege guards (0013)**: `protect_profile_privileges`,
+  `protect_kyc_fields` and `protect_account_balances` triggers block
+  self-escalation of role/tenant, KYC self-approval and balance tampering by
+  customers. Balances move only through `post_journal()` (SECURITY DEFINER),
+  whose internal writes bypass the trigger via the function-owner context.

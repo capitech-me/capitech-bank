@@ -16,8 +16,8 @@ export const metadata: Metadata = {
     template: "%s | Capitech Bank",
   },
   description:
-    "Capitech Bank is a full-fledged digital bank offering multi-currency accounts, virtual cards, term deposits, crypto, corporate banking and open APIs for businesses.",
-  keywords: ["digital bank", "multi-currency", "virtual cards", "term deposits", "crypto", "corporate banking", "open banking"],
+    "Capitech Bank is a full-fledged digital bank offering multi-currency accounts, virtual cards, term deposits, crypto and open APIs for individuals and businesses.",
+  keywords: ["digital bank", "multi-currency", "virtual cards", "term deposits", "crypto", "open banking"],
   openGraph: {
     type: "website",
     locale: "en_US",
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     siteName: "Capitech Bank",
     title: "Capitech Bank — Banking beyond borders",
     description:
-      "Multi-currency accounts, virtual cards, term deposits, crypto and open APIs. Personal & corporate banking for the digital era.",
+      "Multi-currency accounts, virtual cards, term deposits, crypto and open APIs. Personal & business banking for the digital era.",
   },
   twitter: {
     card: "summary_large_image",

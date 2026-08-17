@@ -1,14 +1,24 @@
 import { NextResponse } from "next/server";
-import { createAdminClient } from "@capitech/db";
+import { createAdminClient, createServerClient, withRateLimit } from "@capitech/db";
+import { cookies } from "next/headers";
 
 /**
  * GET /api/crypto/prices?assets=BTC,ETH,SOL,USDT
  * Fetches live prices from CoinGecko and caches them in crypto_prices.
  * Falls back to the cache (with a staleness flag) when CoinGecko is unreachable.
+ *
+ * Security (S-9): anonymous callers can only READ cached prices. The server
+ * refreshes the cache with the service-role client internally — no query
+ * param or body can force a write; writes happen only from the server's own
+ * CoinGecko fetch.
  */
 
 const CACHE_TTL_MS = 60_000; // 60s
 const COINGECKO = "https://api.coingecko.com/api/v3/simple/price";
+
+// Rate limit for anonymous reads (S-7).
+const RATE_LIMIT = 60;
+const RATE_WINDOW_MS = 60_000;
 
 const ASSET_TO_COINGECKO: Record<string, string> = {
   BTC: "bitcoin",
@@ -53,6 +63,9 @@ const ASSET_TO_COINGECKO: Record<string, string> = {
 };
 
 export async function GET(req: Request) {
+  const limited = withRateLimit(req, RATE_LIMIT, RATE_WINDOW_MS);
+  if (limited) return limited;
+
   const url = new URL(req.url);
   const requested = (url.searchParams.get("assets") ?? "BTC,ETH,SOL,USDT")
     .split(",")
@@ -62,7 +75,17 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "no_supported_assets" }, { status: 400 });
   }
 
-  const supabase = createAdminClient();
+  const cookieStore = await cookies();
+  const supabase = await createServerClient({
+    getAll: () => cookieStore.getAll(),
+    setAll: (cookiesToSet) => {
+      try {
+        cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options));
+      } catch {
+        // ignore when called from a Server Component context
+      }
+    },
+  });
 
   // 1. Try a fresh CoinGecko fetch
   const ids = requested.map((a) => ASSET_TO_COINGECKO[a]).join(",");
@@ -87,7 +110,9 @@ export async function GET(req: Request) {
       }
 
       if (rows.length > 0) {
-        await supabase.from("crypto_prices").upsert(rows, { onConflict: "asset" });
+        // Server-side cache maintenance only — never driven by client input.
+        const admin = createAdminClient();
+        await admin.from("crypto_prices").upsert(rows, { onConflict: "asset" });
       }
       return NextResponse.json({ data: rows, stale: false, fetched_at: new Date().toISOString() });
     }
@@ -95,7 +120,7 @@ export async function GET(req: Request) {
     // fall through to cache
   }
 
-  // 2. Fallback: cached prices
+  // 2. Fallback: cached prices (read through the anon/public client)
   const { data: cached, error } = await supabase
     .from("crypto_prices")
     .select("asset, price_usd, change_24h, market_cap, updated_at")

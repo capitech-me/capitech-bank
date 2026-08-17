@@ -1,11 +1,14 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { requireApiKey, ownerAccounts } from "../helpers";
+import { requireApiKey, ownerAccounts, enforceApiKeyQuota } from "../helpers";
 
 /** GET /api/open/v1/accounts — list accounts owned by the API key's owner. */
 export async function GET(req: NextRequest) {
   const { ctx, response } = await requireApiKey(req, "read");
   if (response) return response;
+
+  const limited = await enforceApiKeyQuota(req, ctx!);
+  if (limited) return limited;
 
   try {
     const accounts = await ownerAccounts(ctx!);

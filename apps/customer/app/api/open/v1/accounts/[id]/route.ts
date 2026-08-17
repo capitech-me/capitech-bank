@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { createAdminClient } from "@capitech/db";
-import { requireApiKey, ownerAccounts, apiError } from "../../helpers";
+import { requireApiKey, ownerAccounts, apiError, enforceApiKeyQuota } from "../../helpers";
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -12,6 +12,9 @@ export async function GET(req: NextRequest, { params }: RouteContext) {
   const { id } = await params;
   const { ctx, response } = await requireApiKey(req, "read");
   if (response) return response;
+
+  const limited = await enforceApiKeyQuota(req, ctx!);
+  if (limited) return limited;
 
   const accounts = await ownerAccounts(ctx!);
   const account = accounts.find((a: any) => a.id === id);
@@ -25,6 +28,9 @@ export async function transactions(req: NextRequest, { params }: RouteContext) {
   const { id } = await params;
   const { ctx, response } = await requireApiKey(req, "read");
   if (response) return response;
+
+  const limited = await enforceApiKeyQuota(req, ctx!);
+  if (limited) return limited;
 
   const accounts = await ownerAccounts(ctx!);
   const account = accounts.find((a: any) => a.id === id);

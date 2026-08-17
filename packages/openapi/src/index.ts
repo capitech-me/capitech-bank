@@ -1,5 +1,7 @@
 import { createHash, createHmac, randomBytes } from "node:crypto";
 import { createAdminClient } from "@capitech/db";
+import { isSafeWebhookUrl } from "./ssrf";
+export * from "./ssrf";
 
 /**
  * Capitech Open API — key management, bearer auth, webhook dispatch.
@@ -118,6 +120,31 @@ export async function dispatchWebhooks(event: WebhookEvent, payload: unknown, te
     if (!(ep.events ?? []).includes(event)) continue;
     const body = JSON.stringify({ event, data: payload, sent_at: new Date().toISOString() });
     const signature = signWebhookPayload(ep.secret, JSON.parse(body));
+
+    // SSRF re-check (S-10): the stored URL may have changed or now resolve
+    // to an internal address — never dispatch to an unsafe endpoint.
+    let safe = false;
+    try {
+      safe = await isSafeWebhookUrl(ep.url);
+    } catch {
+      safe = false;
+    }
+    if (!safe) {
+      try {
+        await supabase.from("webhook_events").insert({
+          tenant_id: tenantId,
+          endpoint_id: ep.id,
+          event_type: event,
+          payload: JSON.parse(body),
+          status: "failed",
+          attempts: 1,
+        });
+      } catch {
+        // ignore
+      }
+      continue;
+    }
+
     try {
       const res = await fetch(ep.url, {
         method: "POST",

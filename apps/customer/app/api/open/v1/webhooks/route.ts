@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { createAdminClient } from "@capitech/db";
-import { requireApiKey, apiError } from "../helpers";
+import { requireApiKey, apiError, enforceApiKeyQuota } from "../helpers";
 import { randomBytes } from "node:crypto";
+import { isSafeWebhookUrl } from "@capitech/openapi";
 
 /**
  * Webhook endpoint management (Open API).
@@ -13,6 +14,8 @@ import { randomBytes } from "node:crypto";
 export async function GET(req: NextRequest) {
   const { ctx, response } = await requireApiKey(req, "webhooks");
   if (response) return response;
+  const limited = await enforceApiKeyQuota(req, ctx!);
+  if (limited) return limited;
   const supabase = createAdminClient();
   const { data: endpoints } = await supabase
     .from("webhook_endpoints")
@@ -25,11 +28,18 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const { ctx, response } = await requireApiKey(req, "webhooks");
   if (response) return response;
+  const limited = await enforceApiKeyQuota(req, ctx!);
+  if (limited) return limited;
 
   const body = await req.json().catch(() => ({}));
   const { url, events } = body as { url?: string; events?: string[] };
   if (!url || !/^https:\/\//.test(url)) {
     return apiError("bad_request", 400, "url must be an https:// endpoint");
+  }
+  // SSRF guard (S-10): reject endpoints that resolve to internal/private hosts.
+  const safe = await isSafeWebhookUrl(url);
+  if (!safe) {
+    return apiError("bad_request", 400, "url is not a safe public https endpoint");
   }
   const allowed = ["payment.created", "payment.updated", "customer.created"];
   const subscribed = (events ?? []).filter((e) => allowed.includes(e));

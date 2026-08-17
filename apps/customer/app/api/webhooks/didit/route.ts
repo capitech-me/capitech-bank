@@ -1,17 +1,25 @@
 import crypto from "node:crypto";
 import { NextResponse } from "next/server";
-import { createAdminClient } from "@capitech/db";
+import { createAdminClient, rateLimit } from "@capitech/db";
 import { kycEmail, sendEmail } from "@capitech/email";
 
 /**
  * Didit KYC webhook — https://app.capitech.me/api/webhooks/didit
  *
  * Pipeline (in order): timestamp freshness → canonical V2 re-serialise →
- * constant-time HMAC-SHA256 vs X-Signature-V2 → event_id idempotency →
+ * constant-time HMAC-SHA256 vs X-Signature-V2 → event_id validation →
+ * event-based rate limit → event_id idempotency →
  * dispatch on status (case-sensitive literals) → 2xx within 5 seconds.
  *
  * The webhook is the SOURCE OF TRUTH for verification decisions.
+ * Decision write failures return 500 so Didit retries (M-3).
  */
+
+// Per-event bucket: retries of the SAME event id share a budget, so legitimate
+// Didit retries are not blocked by a raw IP cap (S-7).
+const EVENT_RATE_LIMIT = 30;
+const EVENT_RATE_WINDOW_MS = 60_000;
+const MAX_EVENT_ID_LENGTH = 200;
 
 // Whole-number floats (1.0) -> integers (1), recursively — matches Didit's canonicalisation.
 function shortenFloats(v: unknown): unknown {
@@ -60,6 +68,16 @@ export async function POST(req: Request) {
   } catch {
     return new Response("bad body", { status: 400 });
   }
+
+  // 2b. Validate event_id BEFORE idempotency — malformed events are rejected (M-3).
+  if (
+    typeof parsed.event_id !== "string" ||
+    parsed.event_id.length === 0 ||
+    parsed.event_id.length > MAX_EVENT_ID_LENGTH
+  ) {
+    return new Response("bad event_id", { status: 400 });
+  }
+
   const canonical = JSON.stringify(sortKeys(shortenFloats(parsed)));
 
   // 3. Constant-time HMAC-SHA256 compare against X-Signature-V2.
@@ -69,6 +87,20 @@ export async function POST(req: Request) {
     !crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(sig))
   ) {
     return new Response("bad sig", { status: 401 });
+  }
+
+  // 3b. Rate limit keyed on the event id — legit Didit retries share one bucket,
+  // while a runaway retry loop for a single event is capped (S-7).
+  const eventLimit = rateLimit(`didit:event:${parsed.event_id}`, {
+    limit: EVENT_RATE_LIMIT,
+    windowMs: EVENT_RATE_WINDOW_MS,
+  });
+  if (!eventLimit.ok) {
+    const retryAfterSec = Math.max(1, Math.ceil((eventLimit.retryAfterMs ?? 0) / 1000));
+    return new Response("rate limited", {
+      status: 429,
+      headers: { "Retry-After": String(retryAfterSec) },
+    });
   }
 
   // 4. Idempotency — dedupe on event_id (unique per delivery attempt).
@@ -93,29 +125,31 @@ export async function POST(req: Request) {
         kyc_status: "approved",
         kyc_level: "level_2",
       });
-      await notifyUser(vendorData, "Identity verified", "Your identity verification was approved. Welcome aboard!", "kyc");
-      await emailUser(vendorData, "approved");
+      await bestEffort(notifyUser(vendorData, "Identity verified", "Your identity verification was approved. Welcome aboard!", "kyc"));
+      await bestEffort(emailUser(vendorData, "approved"));
     } else if (parsed.status === "Declined") {
       await applyDecision(vendorData, { kyc_status: "rejected" });
-      await notifyUser(vendorData, "Verification declined", "We could not verify your identity. Please review the details and try again.", "kyc");
-      await emailUser(vendorData, "declined");
+      await bestEffort(notifyUser(vendorData, "Verification declined", "We could not verify your identity. Please review the details and try again.", "kyc"));
+      await bestEffort(emailUser(vendorData, "declined"));
     } else if (parsed.status === "In Review") {
       await applyDecision(vendorData, { kyc_status: "pending" });
-      await notifyUser(vendorData, "Verification in review", "Your identity verification is being reviewed by our compliance team.", "kyc");
-      await emailUser(vendorData, "review");
+      await bestEffort(notifyUser(vendorData, "Verification in review", "Your identity verification is being reviewed by our compliance team.", "kyc"));
+      await bestEffort(emailUser(vendorData, "review"));
     } else if (parsed.status === "Resubmitted") {
       // Reviewer asked the user to retry specific steps — reopen to draft.
       await applyDecision(vendorData, { kyc_status: "draft", kyc_level: "unverified" });
-      await notifyUser(vendorData, "Action needed", "Some verification documents need to be resubmitted. Please start a new verification.", "kyc");
-      await emailUser(vendorData, "resubmit");
+      await bestEffort(notifyUser(vendorData, "Action needed", "Some verification documents need to be resubmitted. Please start a new verification.", "kyc"));
+      await bestEffort(emailUser(vendorData, "resubmit"));
     } else if (parsed.status === "Kyc Expired") {
       await applyDecision(vendorData, { kyc_status: "draft", kyc_level: "unverified" });
-      await notifyUser(vendorData, "Re-verification needed", "Your verification has expired. Please re-verify your identity.", "kyc");
-      await emailUser(vendorData, "expired");
+      await bestEffort(notifyUser(vendorData, "Re-verification needed", "Your verification has expired. Please re-verify your identity.", "kyc"));
+      await bestEffort(emailUser(vendorData, "expired"));
     }
     // Not Started | In Progress | Awaiting User | Abandoned | Expired → no-op (logged below)
   } catch (err) {
+    // DB write failure — surface it so Didit retries instead of acking (M-3).
     console.error("[didit-webhook] decision apply failed", err);
+    return new Response("error", { status: 500 });
   }
 
   // Record idempotency + audit (append-only log), keep the payload for review.
@@ -151,6 +185,15 @@ export async function POST(req: Request) {
   return new Response("ok");
 }
 
+/** Run a best-effort side effect (notifications/email) — never 500 on those. */
+async function bestEffort(promise: Promise<void> | void): Promise<void> {
+  try {
+    await promise;
+  } catch (err) {
+    console.error("[didit-webhook] best-effort notification failed", err);
+  }
+}
+
 /** Update the customer record linked to vendor_data (the auth user id). */
 async function applyDecision(
   vendorData: string | undefined,
@@ -158,13 +201,15 @@ async function applyDecision(
 ) {
   if (!vendorData) return;
   const supabase = createAdminClient();
-  const { data: customer } = await supabase
+  const { data: customer, error } = await supabase
     .from("customers")
     .select("id")
     .eq("profile_id", vendorData)
     .maybeSingle();
+  if (error) throw error; // surface DB failure → route returns 500 so Didit retries
   if (customer) {
-    await supabase.from("customers").update(patch).eq("id", customer.id);
+    const { error: updateError } = await supabase.from("customers").update(patch).eq("id", customer.id);
+    if (updateError) throw updateError;
   }
 }
 

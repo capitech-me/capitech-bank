@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { createAdminClient } from "@capitech/db";
-import { requireApiKey, ownerAccounts, apiError } from "../helpers";
+import { requireApiKey, ownerAccounts, apiError, enforceApiKeyQuota } from "../helpers";
 import { dispatchWebhooks } from "@capitech/openapi";
 
 /**
@@ -13,6 +13,9 @@ import { dispatchWebhooks } from "@capitech/openapi";
 export async function POST(req: NextRequest) {
   const { ctx, response } = await requireApiKey(req, "write:transfers");
   if (response) return response;
+
+  const limited = await enforceApiKeyQuota(req, ctx!);
+  if (limited) return limited;
 
   const body = await req.json().catch(() => ({}));
   const { from_account_id, amount, currency, to_account_id, to_iban, reference, narration } = body as any;

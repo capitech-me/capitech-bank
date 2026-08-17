@@ -4,7 +4,7 @@ import { Products } from "@/components/products";
 import { Features } from "@/components/features";
 import { HowItWorks } from "@/components/how-it-works";
 import { Security } from "@/components/security";
-import { Pricing } from "@/components/pricing";
+import { Developers } from "@/components/developers";
 import { Faq } from "@/components/faq";
 import { Cta } from "@/components/cta";
 import { Footer } from "@/components/footer";
@@ -19,7 +19,7 @@ export default function Home() {
         <Features />
         <HowItWorks />
         <Security />
-        <Pricing />
+        <Developers />
         <Faq />
         <Cta />
       </main>

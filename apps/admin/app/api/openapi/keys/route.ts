@@ -37,6 +37,23 @@ export async function POST(req: Request) {
   if (!["customer", "organization"].includes(owner_type) || !owner_id || !name) {
     return NextResponse.json({ error: "bad_request" }, { status: 400 });
   }
+
+  // M-2: the requested owner must belong to the admin's tenant.
+  const adminTenantId = profile!.tenant_id;
+  const ownerTable = owner_type === "customer" ? "customers" : "organizations";
+  const { data: owner } = await supabase
+    .from(ownerTable)
+    .select("id")
+    .eq("id", owner_id)
+    .eq("tenant_id", adminTenantId)
+    .maybeSingle();
+  if (!owner) {
+    return NextResponse.json(
+      { error: "bad_request", detail: "owner not found in this tenant" },
+      { status: 400 }
+    );
+  }
+
   const allowedScopes = ["read", "write:transfers", "webhooks", "admin"];
   const cleanScopes = (scopes ?? ["read"]).filter((s: string) => allowedScopes.includes(s));
   if (cleanScopes.length === 0) cleanScopes.push("read");
@@ -45,7 +62,7 @@ export async function POST(req: Request) {
   const { data: key, error } = await supabase
     .from("api_keys")
     .insert({
-      tenant_id: profile!.tenant_id,
+      tenant_id: adminTenantId,
       name,
       key_hash: hash,
       key_prefix: prefix,

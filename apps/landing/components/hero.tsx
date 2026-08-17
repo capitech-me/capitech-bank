@@ -42,7 +42,7 @@ export function Hero() {
 
             <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-navy-300 lg:mx-0">
               One digital bank for everything — multi-currency accounts, virtual cards,
-              term deposits, crypto and open APIs. Personal and corporate banking that
+              term deposits, crypto and open APIs. Personal and business banking that
               moves as fast as you do.
             </p>
 

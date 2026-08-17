@@ -23,30 +23,21 @@ function OpenDepositDialog({ accountId }: { accountId: string }) {
     setLoading(true);
     if (isSupabaseConfigured()) {
       const supabase = getBrowserClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      const { data: customer } = await supabase.from("customers").select("id").maybeSingle();
-      const start = new Date();
-      const maturity = new Date(start);
-      maturity.setDate(maturity.getDate() + term);
-      const { error } = await supabase.from("deposits").insert({
-        account_id: accountId,
-        customer_id: customer?.id,
-        product_id: "prod-deposit",
-        principal,
-        currency: "USD",
-        interest_rate: "4.25",
-        term_days: term,
-        start_date: start.toISOString().slice(0, 10),
-        maturity_date: maturity.toISOString().slice(0, 10),
-        interest_accrued: "0",
-        rollover,
-        status: "active",
+      // open_deposit derives customer/currency/rate and posts the placement journal.
+      const { error } = await supabase.rpc("open_deposit", {
+        p_account_id: accountId,
+        p_product_id: "prod-deposit",
+        p_principal: Number(principal),
+        p_term_days: term,
+        p_rollover: rollover,
       });
       if (error) {
         toast.error(error.message);
         setLoading(false);
         return;
       }
+      const maturity = new Date();
+      maturity.setDate(maturity.getDate() + term);
       toast.success("Term deposit opened");
       sendClientEmail("deposit_opened", {
         principal,

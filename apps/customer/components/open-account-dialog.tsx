@@ -37,12 +37,12 @@ function OpenAccountDialogInner() {
       setLoading(false);
       return;
     }
-    const { error } = await supabase.from("accounts").insert({
-      product_id: product,
-      owner_type: "customer",
-      owner_id: customer.id,
-      currency,
-      nickname: nickname || null,
+    const { error } = await supabase.rpc("open_account", {
+      p_owner_type: "customer",
+      p_owner_id: customer.id,
+      p_product_id: product,
+      p_currency: currency,
+      p_nickname: nickname || null,
     });
     if (error) {
       toast.error(error.message);

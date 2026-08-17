@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createServerClient } from "@capitech/db";
+import { createServerClient, withRateLimit } from "@capitech/db";
 import { cookies } from "next/headers";
 
 /**
@@ -12,7 +12,14 @@ import { cookies } from "next/headers";
 const WORKFLOW_ID = "29395dea-3494-413e-a9b2-52333b177f79";
 const DIDIT_SESSION_URL = "https://verification.didit.me/v3/session/";
 
+// Each session burns Didit quota — tight per-IP cap (S-7).
+const RATE_LIMIT = 5;
+const RATE_WINDOW_MS = 60_000;
+
 export async function POST(req: Request) {
+  const limited = withRateLimit(req, RATE_LIMIT, RATE_WINDOW_MS);
+  if (limited) return limited;
+
   // 1. Identify the user from YOUR auth session — never trust the browser body.
   const cookieStore = await cookies();
   const supabase = await createServerClient({

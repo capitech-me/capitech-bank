@@ -27,16 +27,32 @@ port = 54324
 enabled = true
 site_url = "http://localhost:3000"
 additional_redirect_urls = ["http://localhost:3000/auth/callback", "http://localhost:3001/*", "http://localhost:3002/*"]
+# Production hardening (M-5): 1h access-token expiry; signup stays enabled
+# (self-service onboarding) but confirmations + MFA are enforced below.
 jwt_expiry = 3600
 enable_signup = true
 
 [auth.email]
 enable_signup = true
-double_confirm_changes = false
+# Require the user to confirm any email/security-sensitive change (M-5).
+double_confirm_changes = true
 enable_confirmations = true
 
 [auth.mfa]
 enabled = true
+
+# ---------------------------------------------------------------------
+# Dashboard-side auth settings that CANNOT be set in config.toml
+# (apply them in Supabase Dashboard → Authentication):
+#   - Rate limits: Auth → Rate Limits → set per-hour login/signup/token
+#     limits appropriate for production (e.g. 30 login, 10 signup, 180
+#     token refreshes per hour per IP).
+#   - Sessions: enable "Detect and revoke sessions outside the allowed
+#     IP range" if applicable; keep refresh-token rotation ON.
+#   - SMTP: configure a real provider so confirmation/reset emails send.
+#   - Auth Hook: enable the MFA challenge hook and a custom access-token
+#     hook for step-up auth on high-risk operations if available.
+# ---------------------------------------------------------------------
 
 [storage]
 enabled = true
