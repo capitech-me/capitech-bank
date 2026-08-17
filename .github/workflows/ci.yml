@@ -71,6 +71,9 @@ jobs:
   e2e:
     name: E2E (Playwright, manual)
     runs-on: ubuntu-latest
+    # Manual only — never blocks pushes/PRs. The top-level `on:` triggers apply
+    # to ALL jobs, so gate explicitly here.
+    if: github.event_name == 'workflow_dispatch'
     timeout-minutes: 25
     steps:
       - name: Checkout

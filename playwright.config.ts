@@ -25,19 +25,19 @@ export default defineConfig({
       command: "pnpm dev:landing",
       url: "http://localhost:3006",
       reuseExistingServer: true,
-      timeout: 120_000,
+      timeout: 240_000,
     },
     {
       command: "pnpm dev:customer",
       url: "http://localhost:3001",
       reuseExistingServer: true,
-      timeout: 120_000,
+      timeout: 240_000,
     },
     {
       command: "pnpm dev:admin",
       url: "http://localhost:3002",
       reuseExistingServer: true,
-      timeout: 120_000,
+      timeout: 240_000,
     },
   ],
 
