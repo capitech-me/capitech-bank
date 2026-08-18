@@ -29,13 +29,16 @@ export default defineConfig({
     },
     {
       command: "pnpm dev:customer",
-      url: "http://localhost:3001",
+      // Customer app serves under /app (basePath) — the root URL 404s,
+      // which would make Playwright's readiness probe wait forever.
+      url: "http://localhost:3001/app",
       reuseExistingServer: true,
       timeout: 240_000,
     },
     {
       command: "pnpm dev:admin",
-      url: "http://localhost:3002",
+      // Admin app serves under /admin (basePath) — same basePath caveat.
+      url: "http://localhost:3002/admin",
       reuseExistingServer: true,
       timeout: 240_000,
     },
