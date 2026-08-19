@@ -8,35 +8,31 @@ const COLUMNS = [
     links: [
       { label: "Personal", href: "/personal" },
       { label: "Business", href: "/business" },
-      { label: "Crypto", href: "#products" },
-      { label: "Virtual cards", href: "#products" },
     ],
   },
   {
     title: "Developers",
     links: [
-      { label: "Open API", href: "#developers" },
-      { label: "API documentation", href: "#developers" },
-      { label: "Sandbox", href: "#developers" },
-      { label: "Webhooks", href: "#developers" },
+      { label: "Open API", href: "/developers#open-api" },
+      { label: "API documentation", href: "/developers#api-docs" },
+      { label: "Sandbox", href: "/developers#sandbox" },
+      { label: "Webhooks", href: "/developers#webhooks" },
     ],
   },
   {
     title: "Company",
     links: [
       { label: "About", href: "#" },
-      { label: "Careers", href: "#" },
-      { label: "Press", href: "#" },
       { label: "Contact", href: "/contact" },
     ],
   },
   {
     title: "Legal",
     links: [
-      { label: "Privacy Policy", href: "#" },
-      { label: "Terms of Service", href: "#" },
-      { label: "Cookie Policy", href: "#" },
-      { label: "Regulatory", href: "#" },
+      { label: "Privacy Policy", href: "/legal#privacy" },
+      { label: "Terms of Service", href: "/legal#terms" },
+      { label: "Cookie Policy", href: "/legal#cookies" },
+      { label: "Regulatory", href: "/legal#regulatory" },
     ],
   },
 ];

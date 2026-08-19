@@ -114,7 +114,7 @@ export default function PersonalPage() {
               moves.
             </p>
             <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
-              <Button asChild size="xl" className="w-full sm:w-auto">
+              <Button asChild size="xl" className="w-full bg-brand-600 text-white shadow-sm hover:bg-brand-500 sm:w-auto">
                 <Link href="/sign-up?type=retail">
                   Open a personal account
                   <ArrowRight className="size-5" />

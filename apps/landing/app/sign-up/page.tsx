@@ -213,7 +213,7 @@ function SignUpForm() {
             </Alert>
           )}
 
-          <Button type="submit" size="lg" className="w-full" disabled={loading || !acceptTerms || !supabaseConfigured}>
+          <Button type="submit" size="lg" className="w-full bg-brand-600 text-white shadow-sm hover:bg-brand-500" disabled={loading || !acceptTerms || !supabaseConfigured}>
             {loading ? "Creating account…" : "Create account"}
             {!loading && <ArrowRight className="size-4" />}
           </Button>

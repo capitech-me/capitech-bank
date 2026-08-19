@@ -2,19 +2,23 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Menu, X, ArrowRight } from "lucide-react";
 import { Button, Logo } from "@capitech/ui";
 
 const NAV_LINKS = [
   { href: "/personal", label: "Personal" },
   { href: "/business", label: "Business" },
-  { href: "#features", label: "Features" },
-  { href: "#developers", label: "Developers" },
-  { href: "#faq", label: "FAQ" },
+  { href: "/developers", label: "Developers" },
+  // Anchor-only sections live on the home page; hide them everywhere else.
+  { href: "#features", label: "Features", homeOnly: true },
+  { href: "#faq", label: "FAQ", homeOnly: true },
 ];
 
 export function Navbar() {
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const links = NAV_LINKS.filter((link) => !link.homeOnly || pathname === "/");
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-navy-950/85 backdrop-blur-md">
@@ -24,7 +28,7 @@ export function Navbar() {
         </Link>
 
         <div className="hidden items-center gap-1 lg:flex">
-          {NAV_LINKS.map((link) => (
+          {links.map((link) => (
             <Link
               key={link.href}
               href={link.href}
@@ -36,10 +40,10 @@ export function Navbar() {
         </div>
 
         <div className="hidden items-center gap-3 lg:flex">
-          <Button asChild variant="ghost" className="text-navy-100 hover:bg-white/5 hover:text-white">
+          <Button asChild variant="ghost" className="text-white hover:bg-white/10 hover:text-white">
             <Link href="/sign-in">Sign in</Link>
           </Button>
-          <Button asChild size="lg">
+          <Button asChild size="lg" className="bg-brand-600 text-white shadow-sm hover:bg-brand-500">
             <Link href="/sign-up">
               Open account
               <ArrowRight className="size-4" />
@@ -60,7 +64,7 @@ export function Navbar() {
       {open && (
         <div className="border-t border-white/10 bg-navy-950 px-4 pb-6 pt-3 lg:hidden">
           <div className="flex flex-col gap-1">
-            {NAV_LINKS.map((link) => (
+            {links.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
@@ -75,7 +79,7 @@ export function Navbar() {
             <Button asChild variant="outline" className="border-white/15 bg-transparent text-white hover:bg-white/5">
               <Link href="/sign-in">Sign in</Link>
             </Button>
-            <Button asChild size="lg">
+            <Button asChild size="lg" className="bg-brand-600 text-white shadow-sm hover:bg-brand-500">
               <Link href="/sign-up">
                 Open account
                 <ArrowRight className="size-4" />

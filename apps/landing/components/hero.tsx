@@ -47,7 +47,7 @@ export function Hero() {
             </p>
 
             <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center lg:justify-start">
-              <Button asChild size="xl" className="w-full sm:w-auto">
+              <Button asChild size="xl" className="w-full bg-brand-600 text-white shadow-sm hover:bg-brand-500 sm:w-auto">
                 <Link href="/sign-up">
                   Open your account
                   <ArrowRight className="size-5" />

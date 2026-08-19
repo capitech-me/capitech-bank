@@ -231,7 +231,7 @@ export default function SignInPage() {
                   </Alert>
                 )}
 
-                <Button type="submit" size="lg" className="w-full" disabled={loading || !supabaseConfigured}>
+                <Button type="submit" size="lg" className="w-full bg-brand-600 text-white shadow-sm hover:bg-brand-500" disabled={loading || !supabaseConfigured}>
                   {loading ? "Signing in…" : factorId ? "Verify code" : "Sign in"}
                   {!loading && <ArrowRight className="size-4" />}
                 </Button>

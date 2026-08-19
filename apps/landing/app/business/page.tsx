@@ -120,7 +120,7 @@ export default function BusinessPage() {
               tools founders and SMEs need to move money, control spend and scale.
             </p>
             <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
-              <Button asChild size="xl" className="w-full sm:w-auto">
+              <Button asChild size="xl" className="w-full bg-brand-600 text-white shadow-sm hover:bg-brand-500 sm:w-auto">
                 <Link href="/sign-up?type=corporate">
                   Open a business account
                   <ArrowRight className="size-5" />
