@@ -23,6 +23,7 @@ export default async function AccountsPage() {
           <Link
             key={account.id}
             href={`/accounts/${account.id}`}
+            prefetch={false}
             className="group rounded-2xl border border-border bg-card p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:border-brand-400/50 hover:shadow-md"
           >
             <div className="flex items-start justify-between">
@@ -54,7 +55,7 @@ export default async function AccountsPage() {
           <h3 className="mt-3 font-semibold text-white">No accounts yet</h3>
           <p className="mt-1 text-sm text-muted-foreground">Open your first account to get started.</p>
           <Button asChild className="mt-5">
-            <Link href="/accounts?open=1">Open an account</Link>
+            <Link href="/accounts?open=1" prefetch={false}>Open an account</Link>
           </Button>
         </div>
       )}

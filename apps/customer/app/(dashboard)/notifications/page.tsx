@@ -69,7 +69,7 @@ export default async function NotificationsPage() {
 
       <div className="rounded-2xl border border-border bg-card p-5 text-sm text-muted-foreground">
         Manage email preferences in{" "}
-        <Link href="/profile" className="font-medium text-brand-400 hover:underline">Profile &amp; Security</Link>.
+        <Link href="/profile" prefetch={false} className="font-medium text-brand-400 hover:underline">Profile &amp; Security</Link>.
       </div>
     </div>
   );

@@ -44,7 +44,7 @@ export default async function DashboardPage() {
               <h3 className="flex items-center gap-2 font-semibold text-white">
                 <CreditCard className="size-4 text-brand-400" /> Cards
               </h3>
-              <Link href="/cards" className="text-sm font-medium text-brand-400 hover:text-brand-300">
+              <Link href="/cards" prefetch={false} className="text-sm font-medium text-brand-400 hover:text-brand-300">
                 Manage
               </Link>
             </div>
@@ -73,7 +73,7 @@ export default async function DashboardPage() {
               <h3 className="flex items-center gap-2 font-semibold text-white">
                 <PiggyBank className="size-4 text-accent-400" /> Term deposits
               </h3>
-              <Link href="/deposits" className="text-sm font-medium text-brand-400 hover:text-brand-300">
+              <Link href="/deposits" prefetch={false} className="text-sm font-medium text-brand-400 hover:text-brand-300">
                 View
               </Link>
             </div>
@@ -102,7 +102,7 @@ export default async function DashboardPage() {
               <h3 className="flex items-center gap-2 font-semibold text-white">
                 <Wallet className="size-4 text-brand-400" /> Updates
               </h3>
-              <Link href="/notifications" className="text-sm font-medium text-brand-400 hover:text-brand-300">
+              <Link href="/notifications" prefetch={false} className="text-sm font-medium text-brand-400 hover:text-brand-300">
                 All
               </Link>
             </div>

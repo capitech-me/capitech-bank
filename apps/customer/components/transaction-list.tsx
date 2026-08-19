@@ -69,7 +69,7 @@ export function TransactionsCard({ transactions, viewAllHref }: { transactions: 
       <div className="mb-2 flex items-center justify-between">
         <h3 className="font-semibold text-white">Recent activity</h3>
         {viewAllHref && (
-          <Link href={viewAllHref} className="text-sm font-medium text-brand-400 hover:text-brand-300">
+          <Link href={viewAllHref} prefetch={false} className="text-sm font-medium text-brand-400 hover:text-brand-300">
             View all
           </Link>
         )}

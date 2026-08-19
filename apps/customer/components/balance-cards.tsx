@@ -52,6 +52,7 @@ export function QuickActions() {
         <Link
           key={action.label}
           href={action.href}
+          prefetch={false}
           className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-navy-100 shadow-sm transition-colors hover:border-brand-400/50 hover:bg-white/5"
         >
           <action.icon className="size-4 text-brand-400" />
