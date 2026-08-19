@@ -15,16 +15,17 @@ import {
   FileText,
   Menu,
   X,
+  type LucideIcon,
 } from "lucide-react";
 import { Logo, cn } from "@capitech/ui";
 
-const NAV_ITEMS = [
+const NAV_ITEMS: { href: string; label: string; icon: LucideIcon; badge?: string }[] = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
   { href: "/accounts", label: "Accounts", icon: Wallet },
   { href: "/transfers", label: "Transfers", icon: ArrowLeftRight },
   { href: "/cards", label: "Cards", icon: CreditCard },
   { href: "/deposits", label: "Term Deposits", icon: PiggyBank },
-  { href: "/crypto", label: "Crypto", icon: Coins, badge: "Soon" },
+  { href: "/crypto", label: "Crypto", icon: Coins },
   { href: "/statements", label: "Statements", icon: FileText },
 ];
 

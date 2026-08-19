@@ -34,7 +34,7 @@ const PRODUCTS = [
     href: "/sign-up?type=retail",
     icon: Coins,
     title: "Crypto",
-    badge: "Coming soon",
+    badge: "Live",
     description:
       "Buy, sell and hold digital assets directly from your bank account with custodial wallets and live market prices.",
     features: ["Custodial crypto wallets", "Live market prices", "Instant conversion to fiat", "Bank-grade custody"],

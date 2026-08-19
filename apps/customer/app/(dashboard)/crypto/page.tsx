@@ -193,7 +193,7 @@ export default function CryptoPage() {
             {priceStale && <span className="ml-2 text-amber-400">(prices delayed)</span>}
           </p>
         </div>
-        <Badge variant="info" className="w-fit">Powered by CoinGecko</Badge>
+        <Badge variant="info" className="w-fit">Powered by Alpha Vantage</Badge>
       </div>
 
       {/* Live prices */}

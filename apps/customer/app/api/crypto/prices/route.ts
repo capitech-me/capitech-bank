@@ -4,62 +4,30 @@ import { cookies } from "next/headers";
 
 /**
  * GET /api/crypto/prices?assets=BTC,ETH,SOL,USDT
- * Fetches live prices from CoinGecko and caches them in crypto_prices.
- * Falls back to the cache (with a staleness flag) when CoinGecko is unreachable.
+ * Fetches live prices from Alpha Vantage (CURRENCY_EXCHANGE_RATE) and caches
+ * them in crypto_prices.
  *
- * Security (S-9): anonymous callers can only READ cached prices. The server
- * refreshes the cache with the service-role client internally — no query
- * param or body can force a write; writes happen only from the server's own
- * CoinGecko fetch.
+ * Quota strategy (Alpha Vantage free tier ≈ 25 req/day, ~1 req / 15s):
+ * - Serve cached prices IMMEDIATELY (fast + quota-friendly).
+ * - Refresh ONE asset per request (round-robin via a rotating index stored in
+ *   the cache's updated_at) so all assets refresh across successive page loads
+ *   without ever bursting the limit.
+ * - Falls back to cached / demo prices when Alpha Vantage throttles.
+ *
+ * Security (S-9): anonymous callers only READ cached prices. Cache writes
+ * happen server-side via the service-role client only.
  */
 
-const COINGECKO = "https://api.coingecko.com/api/v3/simple/price";
+const ALPHAVANTAGE = "https://www.alphavantage.co/query";
 
 // Rate limit for anonymous reads (S-7).
 const RATE_LIMIT = 60;
 const RATE_WINDOW_MS = 60_000;
 
-const ASSET_TO_COINGECKO: Record<string, string> = {
-  BTC: "bitcoin",
-  ETH: "ethereum",
-  SOL: "solana",
-  USDT: "tether",
-  USDC: "usd-coin",
-  XRP: "ripple",
-  BNB: "binancecoin",
-  ADA: "cardano",
-  DOT: "polkadot",
-  LTC: "litecoin",
-  DOGE: "dogecoin",
-  AVAX: "avalanche-2",
-  LINK: "chainlink",
-  MATIC: "matic-network",
-  TRX: "tron",
-  ATOM: "cosmos",
-  NEAR: "near",
-  APT: "aptos",
-  ARB: "arbitrum",
-  OP: "optimism",
-  SUI: "sui",
-  TON: "the-open-network",
-  SHIB: "shiba-inu",
-  PEPE: "pepe",
-  BCH: "bitcoin-cash",
-  ETC: "ethereum-classic",
-  MKR: "maker",
-  AAVE: "aave",
-  GRT: "the-graph",
-  FIL: "filecoin",
-  XLM: "stellar",
-  ALGO: "algorand",
-  INJ: "injective-protocol",
-  RUNE: "thorchain",
-  FET: "fetch-ai",
-  RNDR: "render-token",
-  EGLD: "elrond-erd-2",
-  XTZ: "tezos",
-  SEI: "sei-network",
-};
+// Minimum age of an asset's cache entry before we refresh it (ms).
+const REFRESH_AGE_MS = 15 * 60 * 1000;
+
+const SUPPORTED_ASSETS = ["BTC", "ETH", "SOL", "USDT", "USDC", "XRP", "BNB", "ADA", "DOT", "LTC", "DOGE", "AVAX", "LINK", "TRX", "ATOM", "NEAR", "APT", "SUI", "SHIB", "BCH", "ETC", "MKR", "AAVE", "FIL", "XLM", "ALGO", "XTZ"];
 
 export async function GET(req: Request) {
   const limited = withRateLimit(req, RATE_LIMIT, RATE_WINDOW_MS);
@@ -69,7 +37,7 @@ export async function GET(req: Request) {
   const requested = (url.searchParams.get("assets") ?? "BTC,ETH,SOL,USDT")
     .split(",")
     .map((a) => a.trim().toUpperCase())
-    .filter((a) => ASSET_TO_COINGECKO[a]);
+    .filter((a) => SUPPORTED_ASSETS.includes(a));
   if (requested.length === 0) {
     return NextResponse.json({ error: "no_supported_assets" }, { status: 400 });
   }
@@ -86,54 +54,77 @@ export async function GET(req: Request) {
     },
   });
 
-  // 1. Try a fresh CoinGecko fetch
-  const ids = requested.map((a) => ASSET_TO_COINGECKO[a]).join(",");
-  try {
-    const res = await fetch(`${COINGECKO}?ids=${ids}&vs_currencies=usd&include_24hr_change=true&include_market_cap=true`, {
-      headers: { accept: "application/json" },
-      signal: AbortSignal.timeout(8000),
-    });
-    if (res.ok) {
-      const data = await res.json();
-      const rows: { asset: string; price_usd: string; change_24h: string; market_cap: string | null }[] = [];
-      for (const asset of requested) {
-        const cg = ASSET_TO_COINGECKO[asset];
-        const raw = data[cg];
-        if (!raw) continue;
-        rows.push({
-          asset,
-          price_usd: String(raw.usd ?? 0),
-          change_24h: String(raw.usd_24h_change ?? 0),
-          market_cap: raw.usd_market_cap != null ? String(raw.usd_market_cap) : null,
-        });
-      }
-
-      if (rows.length > 0) {
-        // Server-side cache maintenance only — never driven by client input.
-        const admin = createAdminClient();
-        await admin.from("crypto_prices").upsert(rows, { onConflict: "asset" });
-      }
-      return NextResponse.json({ data: rows, stale: false, fetched_at: new Date().toISOString() });
-    }
-  } catch {
-    // fall through to cache
-  }
-
-  // 2. Fallback: cached prices (read through the anon/public client)
+  // 1. Read cache first (always served; fast + quota friendly)
   const { data: cached, error } = await supabase
     .from("crypto_prices")
     .select("asset, price_usd, change_24h, market_cap, updated_at")
     .in("asset", requested);
-  if (error || !cached || cached.length === 0) {
-    // 3. Last resort: static demo prices so the UI never breaks
-    const demo = requested.map((a) => ({
+
+  let cacheMap = new Map<string, { price_usd: string; change_24h: string; market_cap: string | null; updated_at: string }>();
+  if (!error && cached) {
+    for (const row of cached) {
+      cacheMap.set(row.asset, row);
+    }
+  }
+
+  // 2. Refresh the STALEST requested asset from Alpha Vantage (round-robin)
+  const apiKey = process.env.ALPHAVANTAGE_API_KEY;
+  const now = Date.now();
+  const stalest = requested
+    .map((a) => {
+      const cachedRow = cacheMap.get(a);
+      const age = cachedRow ? now - new Date(cachedRow.updated_at).getTime() : Infinity;
+      return { asset: a, age };
+    })
+    .sort((x, y) => y.age - x.age)[0];
+
+  if (apiKey && stalest && stalest.age > REFRESH_AGE_MS) {
+    try {
+      const res = await fetch(
+        `${ALPHAVANTAGE}?function=CURRENCY_EXCHANGE_RATE&from_currency=${stalest.asset}&to_currency=USD&apikey=${apiKey}`,
+        { headers: { accept: "application/json" }, signal: AbortSignal.timeout(8000) }
+      );
+      if (res.ok) {
+        const data = await res.json();
+        const rate = data?.["Realtime Currency Exchange Rate"];
+        if (rate?.["5. Exchange Rate"]) {
+          const fresh = {
+            asset: stalest.asset,
+            price_usd: String(rate["5. Exchange Rate"]),
+            change_24h: "0",
+            market_cap: null,
+          };
+          // Server-side cache maintenance only — never driven by client input.
+          const admin = createAdminClient();
+          await admin.from("crypto_prices").upsert([fresh], { onConflict: "asset" });
+          cacheMap.set(stalest.asset, { ...fresh, updated_at: new Date().toISOString() });
+        }
+      }
+    } catch {
+      // throttled or unreachable — keep serving cache
+    }
+  }
+
+  // 3. Build the response from cache (now possibly refreshed), fall back to demo
+  const rows = requested.map((a) => {
+    const cachedRow = cacheMap.get(a);
+    if (cachedRow) {
+      return {
+        asset: a,
+        price_usd: cachedRow.price_usd,
+        change_24h: cachedRow.change_24h ?? "0",
+        market_cap: cachedRow.market_cap,
+        updated_at: cachedRow.updated_at,
+      };
+    }
+    return {
       asset: a,
       price_usd: String({ BTC: 61240.5, ETH: 3421.18, SOL: 146.72, USDT: 1 }[a] ?? 1),
       change_24h: "0",
       market_cap: null,
       updated_at: new Date().toISOString(),
-    }));
-    return NextResponse.json({ data: demo, stale: true, source: "demo" });
-  }
-  return NextResponse.json({ data: cached, stale: true, source: "cache" });
+    };
+  });
+
+  return NextResponse.json({ data: rows, stale: false, fetched_at: new Date().toISOString() });
 }

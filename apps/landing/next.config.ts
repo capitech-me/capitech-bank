@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* Workspace packages ship TypeScript source — transpile them */
+  /* Workspace packages ship TypeScript source â€” transpile them */
   transpilePackages: ["@capitech/ui", "@capitech/db", "@capitech/lib", "@capitech/email", "@capitech/openapi"],
 
   /* S-8: Security headers for all routes */
@@ -13,7 +13,7 @@ const nextConfig: NextConfig = {
           {
             key: "Content-Security-Policy",
             value:
-              "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: blob:; font-src 'self' data:; connect-src 'self' https://hekufxbeigxzkyfsqalx.supabase.co https://api.coingecko.com wss:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'",
+              "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: blob:; font-src 'self' data:; connect-src 'self' https://hekufxbeigxzkyfsqalx.supabase.co https://www.alphavantage.co wss:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'",
           },
           {
             key: "Strict-Transport-Security",
