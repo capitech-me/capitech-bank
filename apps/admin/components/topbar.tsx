@@ -31,14 +31,14 @@ export function Topbar({ userName, roleLabel }: TopbarProps) {
     <header className="flex h-16 items-center justify-between border-b border-border bg-card px-4 sm:px-6">
       <div>
         <h2 className="text-sm font-medium text-muted-foreground">Back Office</h2>
-        <p className="hidden text-sm font-semibold text-navy-950 sm:block">{roleLabel}</p>
+        <p className="hidden text-sm font-semibold text-navy-100 sm:block">{roleLabel}</p>
       </div>
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="gap-2 px-2">
             <Avatar className="size-8">
-              <AvatarFallback className="bg-navy-950 text-white">
+              <AvatarFallback className="bg-brand-600 text-white">
                 {userName.split(" ").map((p) => p[0]).slice(0, 2).join("").toUpperCase()}
               </AvatarFallback>
             </Avatar>
@@ -48,11 +48,11 @@ export function Topbar({ userName, roleLabel }: TopbarProps) {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-56">
           <DropdownMenuLabel>
-            <p className="text-sm font-medium text-navy-950">{userName}</p>
+            <p className="text-sm font-medium text-navy-100">{userName}</p>
             <p className="text-xs font-normal text-muted-foreground">{roleLabel}</p>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={handleSignOut} className="text-red-600 focus:text-red-600">
+          <DropdownMenuItem onClick={handleSignOut} className="text-rose-400 focus:text-rose-400">
             <LogOut className="size-4" /> Sign out
           </DropdownMenuItem>
         </DropdownMenuContent>

@@ -76,13 +76,13 @@ export function TransferForm({ accounts }: { accounts: AccountVM[] }) {
     return (
       <Card className="max-w-xl">
         <CardContent className="py-12 text-center">
-          <div className="mx-auto flex size-14 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
+          <div className="mx-auto flex size-14 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-300">
             <CheckCircle2 className="size-7" />
           </div>
-          <h2 className="mt-5 text-xl font-bold text-navy-950">Transfer initiated</h2>
+          <h2 className="mt-5 text-xl font-bold text-white">Transfer initiated</h2>
           <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
             {formatMoney(amount, selectedAccount?.currency ?? "USD")} on its way to{" "}
-            <span className="font-medium text-navy-950">{toAccount}</span>. You will receive a
+            <span className="font-medium text-navy-100">{toAccount}</span>. You will receive a
             notification when it settles.
           </p>
           <Button className="mt-6" onClick={() => { setSuccess(false); setAmount(""); setToAccount(""); }}>
@@ -97,7 +97,7 @@ export function TransferForm({ accounts }: { accounts: AccountVM[] }) {
     <Card className="max-w-xl">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <ArrowLeftRight className="size-5 text-brand-600" /> New transfer
+          <ArrowLeftRight className="size-5 text-brand-400" /> New transfer
         </CardTitle>
         <CardDescription>Send money instantly to another Capitech account or to an external IBAN.</CardDescription>
       </CardHeader>
@@ -122,7 +122,7 @@ export function TransferForm({ accounts }: { accounts: AccountVM[] }) {
           <div className="space-y-2">
             <Label htmlFor="to">Recipient</Label>
             <div className="relative">
-              <ShieldCheck className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-brand-600" />
+              <ShieldCheck className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-brand-400" />
               <Input
                 id="to"
                 required

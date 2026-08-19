@@ -9,7 +9,7 @@ export default async function CustomersPage() {
   return (
     <div className="mx-auto max-w-6xl space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-navy-950">Customers</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-white">Customers</h1>
         <p className="mt-1 text-sm text-muted-foreground">Search and manage all customer records.</p>
       </div>
 
@@ -21,7 +21,7 @@ export default async function CustomersPage() {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-border bg-muted/50 text-left text-xs uppercase tracking-wide text-muted-foreground">
+              <tr className="border-b border-border bg-white/5 text-left text-xs uppercase tracking-wide text-muted-foreground">
                 <th className="px-4 py-3 font-medium">Customer</th>
                 <th className="px-4 py-3 font-medium">Type</th>
                 <th className="px-4 py-3 font-medium">KYC</th>
@@ -32,9 +32,9 @@ export default async function CustomersPage() {
             </thead>
             <tbody className="divide-y divide-border">
               {customers.map((c) => (
-                <tr key={c.id} className="hover:bg-muted/30">
+                <tr key={c.id} className="hover:bg-white/5">
                   <td className="px-4 py-3">
-                    <p className="font-medium text-navy-950">{c.name}</p>
+                    <p className="font-medium text-navy-100">{c.name}</p>
                     <p className="text-xs text-muted-foreground">{c.customerNo}</p>
                   </td>
                   <td className="px-4 py-3 capitalize text-muted-foreground">{c.type}</td>

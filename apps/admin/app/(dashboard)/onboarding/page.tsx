@@ -11,7 +11,7 @@ export default async function OnboardingPage() {
     <div className="mx-auto max-w-6xl space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-navy-950">Onboarding & KYC</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-white">Onboarding & KYC</h1>
           <p className="mt-1 text-sm text-muted-foreground">Review and verify new customer applications.</p>
         </div>
         <Button variant="outline">Export CSV</Button>
@@ -21,7 +21,7 @@ export default async function OnboardingPage() {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-border bg-muted/50 text-left text-xs uppercase tracking-wide text-muted-foreground">
+              <tr className="border-b border-border bg-white/5 text-left text-xs uppercase tracking-wide text-muted-foreground">
                 <th className="px-4 py-3 font-medium">Applicant</th>
                 <th className="px-4 py-3 font-medium">Type</th>
                 <th className="px-4 py-3 font-medium">Country</th>
@@ -33,9 +33,9 @@ export default async function OnboardingPage() {
             </thead>
             <tbody className="divide-y divide-border">
               {queue.map((item) => (
-                <tr key={item.id} className="hover:bg-muted/30">
+                <tr key={item.id} className="hover:bg-white/5">
                   <td className="px-4 py-3">
-                    <p className="font-medium text-navy-950">{item.name}</p>
+                    <p className="font-medium text-navy-100">{item.name}</p>
                     <p className="text-xs text-muted-foreground">{item.customerNo}</p>
                   </td>
                   <td className="px-4 py-3 capitalize text-muted-foreground">{item.type}</td>

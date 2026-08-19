@@ -32,7 +32,7 @@ export function ApproveKycButton({ itemId }: { itemId: string }) {
 
   return (
     <div className="flex justify-end gap-2">
-      <Button size="sm" variant="outline" onClick={() => decide("reject")} disabled={busy !== null} className="text-red-600">
+      <Button size="sm" variant="outline" onClick={() => decide("reject")} disabled={busy !== null} className="text-rose-400">
         <X className="size-4" /> Reject
       </Button>
       <Button size="sm" onClick={() => decide("approve")} disabled={busy !== null}>

@@ -104,7 +104,7 @@ export default function OpenApiPage() {
   return (
     <div className="mx-auto max-w-6xl space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-navy-950">Open API</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-white">Open API</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Issue scoped API keys for business clients and manage webhook endpoints.
         </p>
@@ -171,7 +171,7 @@ export default function OpenApiPage() {
                             onClick={() => setScopes((prev) => (prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]))}
                             className={cn(
                               "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
-                              scopes.includes(s) ? "border-brand-500 bg-brand-50 text-brand-700" : "border-border text-muted-foreground"
+                              scopes.includes(s) ? "border-brand-400 bg-brand-600/20 text-brand-200" : "border-border text-muted-foreground"
                             )}
                           >
                             {s}
@@ -200,7 +200,7 @@ export default function OpenApiPage() {
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-border bg-muted/50 text-left text-xs uppercase tracking-wide text-muted-foreground">
+                    <tr className="border-b border-border bg-white/5 text-left text-xs uppercase tracking-wide text-muted-foreground">
                       <th className="px-4 py-3 font-medium">Name</th>
                       <th className="px-4 py-3 font-medium">Key</th>
                       <th className="px-4 py-3 font-medium">Scopes</th>
@@ -212,8 +212,8 @@ export default function OpenApiPage() {
                   </thead>
                   <tbody className="divide-y divide-border">
                     {keys.map((k) => (
-                      <tr key={k.id} className="hover:bg-muted/30">
-                        <td className="px-4 py-3 font-medium text-navy-950">{k.name}</td>
+                      <tr key={k.id} className="hover:bg-white/5">
+                        <td className="px-4 py-3 font-medium text-navy-100">{k.name}</td>
                         <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{k.key_prefix}…</td>
                         <td className="px-4 py-3">
                           <div className="flex flex-wrap gap-1">
@@ -229,7 +229,7 @@ export default function OpenApiPage() {
                         </td>
                         <td className="px-4 py-3 text-right">
                           {k.status === "active" && (
-                            <Button size="sm" variant="outline" className="text-red-600" onClick={() => revokeKey(k.id)}>
+                            <Button size="sm" variant="outline" className="text-rose-400" onClick={() => revokeKey(k.id)}>
                               Revoke
                             </Button>
                           )}
@@ -251,7 +251,7 @@ export default function OpenApiPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-border bg-muted/50 text-left text-xs uppercase tracking-wide text-muted-foreground">
+                  <tr className="border-b border-border bg-white/5 text-left text-xs uppercase tracking-wide text-muted-foreground">
                     <th className="px-4 py-3 font-medium">URL</th>
                     <th className="px-4 py-3 font-medium">Events</th>
                     <th className="px-4 py-3 font-medium">Status</th>
@@ -260,8 +260,8 @@ export default function OpenApiPage() {
                 </thead>
                 <tbody className="divide-y divide-border">
                   {endpoints.map((e) => (
-                    <tr key={e.id} className="hover:bg-muted/30">
-                      <td className="px-4 py-3 font-mono text-xs text-navy-950">{e.url}</td>
+                    <tr key={e.id} className="hover:bg-white/5">
+                      <td className="px-4 py-3 font-mono text-xs text-navy-100">{e.url}</td>
                       <td className="px-4 py-3">
                         <div className="flex flex-wrap gap-1">
                           {e.events.map((ev) => <Badge key={ev} variant="neutral" className="font-mono">{ev}</Badge>)}
@@ -284,7 +284,7 @@ export default function OpenApiPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <CheckCircle2 className="size-4 text-brand-600" /> Recent deliveries
+                <CheckCircle2 className="size-4 text-brand-400" /> Recent deliveries
               </CardTitle>
               <CardDescription>Last 50 webhook deliveries for this tenant.</CardDescription>
             </CardHeader>
@@ -296,7 +296,7 @@ export default function OpenApiPage() {
                   {deliveries.map((d) => (
                     <li key={d.id} className="flex items-center justify-between gap-4 py-2.5">
                       <div>
-                        <p className="font-mono text-xs text-navy-950">{d.event_type}</p>
+                        <p className="font-mono text-xs text-navy-100">{d.event_type}</p>
                         <p className="text-xs text-muted-foreground">endpoint {d.endpoint_id?.slice(0, 8)} · {formatRelativeTime(d.created_at)}</p>
                       </div>
                       <Badge variant={d.status === "delivered" ? "success" : "destructive"}>{humanize(d.status)}</Badge>

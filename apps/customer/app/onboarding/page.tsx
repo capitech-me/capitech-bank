@@ -30,12 +30,12 @@ function StepIndicator({ step, steps }: { step: number; steps: string[] }) {
           <div
             className={cn(
               "flex size-7 items-center justify-center rounded-full text-xs font-semibold",
-              i < step ? "bg-emerald-100 text-emerald-700" : i === step ? "bg-brand-600 text-white" : "bg-muted text-muted-foreground"
+              i < step ? "bg-emerald-500/15 text-emerald-300" : i === step ? "bg-brand-600 text-white" : "bg-muted text-muted-foreground"
             )}
           >
             {i < step ? <CheckCircle2 className="size-4" /> : i + 1}
           </div>
-          <span className={cn("hidden text-xs sm:block", i === step ? "font-medium text-navy-950" : "text-muted-foreground")}>
+          <span className={cn("hidden text-xs sm:block", i === step ? "font-medium text-navy-100" : "text-muted-foreground")}>
             {label}
           </span>
           {i < steps.length - 1 && <div className="h-px w-6 bg-border sm:w-10" />}
@@ -160,10 +160,10 @@ export default function OnboardingPage() {
       <div className="flex min-h-screen items-center justify-center bg-background px-4">
         <Card className="w-full max-w-md">
           <CardContent className="py-12 text-center">
-            <div className="mx-auto flex size-14 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
+            <div className="mx-auto flex size-14 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-300">
               <CheckCircle2 className="size-7" />
             </div>
-            <h1 className="mt-5 text-2xl font-bold text-navy-950">Application received</h1>
+            <h1 className="mt-5 text-2xl font-bold text-white">Application received</h1>
             <p className="mx-auto mt-3 max-w-sm text-sm text-muted-foreground">
               Our compliance team is reviewing your details. You will receive an email as soon
               as your account is approved — usually within one business day.
@@ -181,7 +181,7 @@ export default function OnboardingPage() {
     <div className="min-h-screen bg-background py-10">
       <div className="mx-auto max-w-2xl space-y-8 px-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-navy-950">Complete your onboarding</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-white">Complete your onboarding</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             We are required to verify your identity (KYC) before activating your account.
           </p>
@@ -209,11 +209,11 @@ export default function OnboardingPage() {
                       onClick={() => setType(opt.key)}
                       className={cn(
                         "rounded-xl border p-5 text-left transition-colors",
-                        type === opt.key ? "border-brand-500 bg-brand-50" : "border-border hover:border-brand-200"
+                        type === opt.key ? "border-brand-400 bg-brand-600/20" : "border-border hover:border-brand-400/50"
                       )}
                     >
-                      <opt.icon className={cn("size-6", type === opt.key ? "text-brand-600" : "text-muted-foreground")} />
-                      <p className="mt-3 font-semibold text-navy-950">{opt.title}</p>
+                      <opt.icon className={cn("size-6", type === opt.key ? "text-brand-400" : "text-muted-foreground")} />
+                      <p className="mt-3 font-semibold text-white">{opt.title}</p>
                       <p className="mt-1 text-sm text-muted-foreground">{opt.desc}</p>
                     </button>
                   ))}
@@ -285,7 +285,7 @@ export default function OnboardingPage() {
                     <Input value={sourceOfFunds} onChange={(e) => setSourceOfFunds(e.target.value)} placeholder="e.g. Salary, business income" />
                   </div>
                 </div>
-                <label className="flex items-start gap-3 rounded-lg bg-muted p-4 text-sm text-navy-950">
+                <label className="flex items-start gap-3 rounded-lg bg-muted p-4 text-sm text-navy-100">
                   <input type="checkbox" checked={isPep} onChange={(e) => setIsPep(e.target.checked)} className="mt-0.5 size-4 accent-brand-600" />
                   I am (or have been) a Politically Exposed Person, or hold a senior public function.
                 </label>
@@ -353,8 +353,8 @@ export default function OnboardingPage() {
                   </CardDescription>
                 </div>
 
-                <div className="rounded-xl border border-brand-200 bg-brand-50/50 p-4">
-                  <p className="text-sm font-medium text-navy-950">Secure identity check</p>
+                <div className="rounded-xl border border-brand-500/30 bg-brand-600/10 p-4">
+                  <p className="text-sm font-medium text-white">Secure identity check</p>
                   <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
                     Powered by Didit. Your documents, biometrics and device information are
                     processed by our verification partner in line with our Privacy Policy. The
@@ -378,9 +378,9 @@ export default function OnboardingPage() {
                     </SelectContent>
                   </Select>
                 </div>
-                <label className="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-border bg-muted/40 px-6 py-8 text-center transition-colors hover:border-brand-300">
+                <label className="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-border bg-muted/40 px-6 py-8 text-center transition-colors hover:border-brand-400/60">
                   <FileUp className="size-7 text-muted-foreground" />
-                  <p className="mt-3 text-sm font-medium text-navy-950">
+                  <p className="mt-3 text-sm font-medium text-navy-100">
                     {docFile ? docFile.name : "Click to upload your document"}
                   </p>
                   <p className="mt-1 text-xs text-muted-foreground">PDF, JPG or PNG — max 10 MB</p>
@@ -407,7 +407,7 @@ export default function OnboardingPage() {
                   <CardTitle>Review & submit</CardTitle>
                   <CardDescription className="mt-1">Please confirm everything is correct before submitting.</CardDescription>
                 </div>
-                <div className="space-y-3 rounded-xl bg-muted/50 p-4 text-sm">
+                <div className="space-y-3 rounded-xl bg-white/5 p-4 text-sm">
                   {type === "retail" ? (
                     <>
                       <Row label="Name" value={`${legalFirst} ${legalLast}`} />
@@ -452,7 +452,7 @@ function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex justify-between gap-4">
       <span className="text-muted-foreground">{label}</span>
-      <span className="text-right font-medium text-navy-950">{value}</span>
+      <span className="text-right font-medium text-navy-100">{value}</span>
     </div>
   );
 }

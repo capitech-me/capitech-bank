@@ -146,7 +146,7 @@ export default function ProfilePage() {
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-navy-950">Profile & Security</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-white">Profile & Security</h1>
         <p className="mt-1 text-sm text-muted-foreground">Manage your personal details, security and preferences.</p>
       </div>
 
@@ -154,7 +154,7 @@ export default function ProfilePage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <User className="size-4 text-brand-600" /> Personal information
+            <User className="size-4 text-brand-400" /> Personal information
           </CardTitle>
           <CardDescription>How we address you and reach you.</CardDescription>
         </CardHeader>
@@ -185,7 +185,7 @@ export default function ProfilePage() {
           </div>
           <div className="flex items-center justify-between rounded-lg bg-muted px-4 py-3">
             <div>
-              <p className="text-sm font-medium text-navy-950">Email notifications</p>
+              <p className="text-sm font-medium text-navy-100">Email notifications</p>
               <p className="text-xs text-muted-foreground">Transaction alerts, security notices and statements.</p>
             </div>
             <Switch
@@ -201,7 +201,7 @@ export default function ProfilePage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <ShieldCheck className="size-4 text-brand-600" /> Two-factor authentication
+            <ShieldCheck className="size-4 text-brand-400" /> Two-factor authentication
           </CardTitle>
           <CardDescription>Add an extra layer of protection with an authenticator app.</CardDescription>
         </CardHeader>
@@ -256,7 +256,7 @@ export default function ProfilePage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Fingerprint className="size-4 text-brand-600" /> Identity verification
+            <Fingerprint className="size-4 text-brand-400" /> Identity verification
           </CardTitle>
           <CardDescription>Verify your identity with Didit to unlock full account access.</CardDescription>
         </CardHeader>
@@ -299,7 +299,7 @@ export default function ProfilePage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <KeyRound className="size-4 text-brand-600" /> Password
+            <KeyRound className="size-4 text-brand-400" /> Password
           </CardTitle>
           <CardDescription>Use a strong, unique password for your account.</CardDescription>
         </CardHeader>

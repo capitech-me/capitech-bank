@@ -8,7 +8,7 @@ export default async function StaffPage() {
   return (
     <div className="mx-auto max-w-5xl space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-navy-950">Staff & Roles</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-white">Staff & Roles</h1>
         <p className="mt-1 text-sm text-muted-foreground">Back-office personnel and their access levels.</p>
       </div>
 
@@ -16,7 +16,7 @@ export default async function StaffPage() {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-border bg-muted/50 text-left text-xs uppercase tracking-wide text-muted-foreground">
+              <tr className="border-b border-border bg-white/5 text-left text-xs uppercase tracking-wide text-muted-foreground">
                 <th className="px-4 py-3 font-medium">Name</th>
                 <th className="px-4 py-3 font-medium">Email</th>
                 <th className="px-4 py-3 font-medium">Role</th>
@@ -26,8 +26,8 @@ export default async function StaffPage() {
             </thead>
             <tbody className="divide-y divide-border">
               {staff.map((s) => (
-                <tr key={s.id} className="hover:bg-muted/30">
-                  <td className="px-4 py-3 font-medium text-navy-950">{s.name}</td>
+                <tr key={s.id} className="hover:bg-white/5">
+                  <td className="px-4 py-3 font-medium text-navy-100">{s.name}</td>
                   <td className="px-4 py-3 text-muted-foreground">{s.email || "—"}</td>
                   <td className="px-4 py-3">
                     <Badge variant={s.role === "super_admin" ? "destructive" : "info"}>

@@ -8,7 +8,7 @@ export default async function PaymentsPage() {
   return (
     <div className="mx-auto max-w-6xl space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-navy-950">Payment approvals</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-white">Payment approvals</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Maker–checker queue — review and authorise payment orders before execution.
         </p>
@@ -18,7 +18,7 @@ export default async function PaymentsPage() {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-border bg-muted/50 text-left text-xs uppercase tracking-wide text-muted-foreground">
+              <tr className="border-b border-border bg-white/5 text-left text-xs uppercase tracking-wide text-muted-foreground">
                 <th className="px-4 py-3 font-medium">Order</th>
                 <th className="px-4 py-3 font-medium">Type</th>
                 <th className="px-4 py-3 text-right font-medium">Amount</th>
@@ -30,13 +30,13 @@ export default async function PaymentsPage() {
             </thead>
             <tbody className="divide-y divide-border">
               {approvals.map((a) => (
-                <tr key={a.id} className="hover:bg-muted/30">
+                <tr key={a.id} className="hover:bg-white/5">
                   <td className="px-4 py-3">
-                    <p className="font-mono text-xs font-medium text-navy-950">{a.orderNo}</p>
+                    <p className="font-mono text-xs font-medium text-navy-100">{a.orderNo}</p>
                     <p className="text-xs text-muted-foreground">by {a.requestedBy}</p>
                   </td>
                   <td className="px-4 py-3 capitalize text-muted-foreground">{humanize(a.txType)}</td>
-                  <td className="px-4 py-3 text-right font-semibold text-navy-950">{formatMoney(a.amount, a.currency)}</td>
+                  <td className="px-4 py-3 text-right font-semibold text-navy-100">{formatMoney(a.amount, a.currency)}</td>
                   <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{a.fromAccount.slice(0, 8)}…</td>
                   <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{a.toAccount.slice(0, 8)}…</td>
                   <td className="px-4 py-3 text-muted-foreground">{formatRelativeTime(a.requestedAt)}</td>

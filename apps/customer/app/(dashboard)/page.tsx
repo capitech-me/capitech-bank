@@ -22,7 +22,7 @@ export default async function DashboardPage() {
     <div className="mx-auto max-w-6xl space-y-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-navy-950">Your money at a glance</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-white">Your money at a glance</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             {accounts.length} account{accounts.length > 1 ? "s" : ""} · balances updated live
           </p>
@@ -41,10 +41,10 @@ export default async function DashboardPage() {
           {/* Cards summary */}
           <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
             <div className="mb-3 flex items-center justify-between">
-              <h3 className="flex items-center gap-2 font-semibold text-navy-950">
-                <CreditCard className="size-4 text-brand-600" /> Cards
+              <h3 className="flex items-center gap-2 font-semibold text-white">
+                <CreditCard className="size-4 text-brand-400" /> Cards
               </h3>
-              <Link href="/cards" className="text-sm font-medium text-brand-600 hover:text-brand-700">
+              <Link href="/cards" className="text-sm font-medium text-brand-400 hover:text-brand-300">
                 Manage
               </Link>
             </div>
@@ -70,10 +70,10 @@ export default async function DashboardPage() {
           {/* Deposits summary */}
           <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
             <div className="mb-3 flex items-center justify-between">
-              <h3 className="flex items-center gap-2 font-semibold text-navy-950">
-                <PiggyBank className="size-4 text-accent-600" /> Term deposits
+              <h3 className="flex items-center gap-2 font-semibold text-white">
+                <PiggyBank className="size-4 text-accent-400" /> Term deposits
               </h3>
-              <Link href="/deposits" className="text-sm font-medium text-brand-600 hover:text-brand-700">
+              <Link href="/deposits" className="text-sm font-medium text-brand-400 hover:text-brand-300">
                 View
               </Link>
             </div>
@@ -84,7 +84,7 @@ export default async function DashboardPage() {
                 {deposits.slice(0, 2).map((dep) => (
                   <div key={dep.id} className="flex items-center justify-between rounded-xl bg-muted px-4 py-3">
                     <div>
-                      <p className="text-sm font-semibold text-navy-950">{formatMoney(dep.principal, dep.currency)}</p>
+                      <p className="text-sm font-semibold text-navy-100">{formatMoney(dep.principal, dep.currency)}</p>
                       <p className="text-xs text-muted-foreground">
                         {formatPercent(dep.interestRate)} · {dep.termDays}d
                       </p>
@@ -99,10 +99,10 @@ export default async function DashboardPage() {
           {/* Notifications preview */}
           <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
             <div className="mb-3 flex items-center justify-between">
-              <h3 className="flex items-center gap-2 font-semibold text-navy-950">
-                <Wallet className="size-4 text-brand-600" /> Updates
+              <h3 className="flex items-center gap-2 font-semibold text-white">
+                <Wallet className="size-4 text-brand-400" /> Updates
               </h3>
-              <Link href="/notifications" className="text-sm font-medium text-brand-600 hover:text-brand-700">
+              <Link href="/notifications" className="text-sm font-medium text-brand-400 hover:text-brand-300">
                 All
               </Link>
             </div>
@@ -112,7 +112,7 @@ export default async function DashboardPage() {
               <ul className="space-y-3">
                 {unread.slice(0, 3).map((n) => (
                   <li key={n.id} className="rounded-xl border border-border px-4 py-3">
-                    <p className="text-sm font-medium text-navy-950">{n.title}</p>
+                    <p className="text-sm font-medium text-navy-100">{n.title}</p>
                     <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">{n.body}</p>
                   </li>
                 ))}

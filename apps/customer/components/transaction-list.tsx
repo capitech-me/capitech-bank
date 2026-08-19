@@ -37,19 +37,19 @@ export function TransactionList({ transactions }: { transactions: TransactionVM[
             <div
               className={cn(
                 "flex size-10 shrink-0 items-center justify-center rounded-full",
-                isIn ? "bg-emerald-100 text-emerald-600" : "bg-navy-100 text-navy-600"
+                isIn ? "bg-emerald-500/15 text-emerald-300" : "bg-white/10 text-navy-200"
               )}
             >
               {isIn ? <ArrowDownLeft className="size-4.5" /> : <ArrowUpRight className="size-4.5" />}
             </div>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium text-navy-950">{tx.counterparty}</p>
+              <p className="truncate text-sm font-medium text-navy-100">{tx.counterparty}</p>
               <p className="truncate text-xs text-muted-foreground">
                 {humanize(tx.txType)} · {formatRelativeTime(tx.createdAt)}
               </p>
             </div>
             <div className="text-right">
-              <p className={cn("text-sm font-semibold", isIn ? "text-emerald-600" : "text-navy-950")}>
+              <p className={cn("text-sm font-semibold", isIn ? "text-emerald-400" : "text-navy-100")}>
                 {isIn ? "+" : "−"}{formatMoney(tx.amount, tx.currency)}
               </p>
               <Badge variant={statusVariant(tx.status)} className="mt-1">
@@ -67,9 +67,9 @@ export function TransactionsCard({ transactions, viewAllHref }: { transactions: 
   return (
     <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
       <div className="mb-2 flex items-center justify-between">
-        <h3 className="font-semibold text-navy-950">Recent activity</h3>
+        <h3 className="font-semibold text-white">Recent activity</h3>
         {viewAllHref && (
-          <Link href={viewAllHref} className="text-sm font-medium text-brand-600 hover:text-brand-700">
+          <Link href={viewAllHref} className="text-sm font-medium text-brand-400 hover:text-brand-300">
             View all
           </Link>
         )}

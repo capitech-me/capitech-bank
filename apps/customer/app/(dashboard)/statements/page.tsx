@@ -9,7 +9,7 @@ export default async function StatementsPage() {
   return (
     <div className="mx-auto max-w-5xl space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-navy-950">Statements</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-white">Statements</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Download your account statements as PDF or CSV — perfect for records, accounting and tax.
         </p>
@@ -19,7 +19,7 @@ export default async function StatementsPage() {
         <Card>
           <CardContent className="py-14 text-center">
             <FileText className="mx-auto size-10 text-muted-foreground" />
-            <h3 className="mt-4 font-semibold text-navy-950">No accounts yet</h3>
+            <h3 className="mt-4 font-semibold text-white">No accounts yet</h3>
             <p className="mt-1 text-sm text-muted-foreground">Open an account to generate statements.</p>
           </CardContent>
         </Card>
@@ -29,7 +29,7 @@ export default async function StatementsPage() {
             <Card key={account.id}>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-base">
-                  <Wallet className="size-4 text-brand-600" />
+                  <Wallet className="size-4 text-brand-400" />
                   {account.nickname ?? account.productName}
                 </CardTitle>
                 <CardDescription>
@@ -39,7 +39,7 @@ export default async function StatementsPage() {
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">Current balance</span>
-                  <span className="text-lg font-bold text-navy-950">
+                  <span className="text-lg font-bold text-navy-100">
                     {formatMoney(account.availableBalance, account.currency)}
                   </span>
                 </div>

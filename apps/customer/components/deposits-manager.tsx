@@ -93,7 +93,7 @@ function OpenDepositDialog({ accountId }: { accountId: string }) {
               </SelectContent>
             </Select>
           </div>
-          <label className="flex items-center gap-3 text-sm text-navy-950">
+          <label className="flex items-center gap-3 text-sm text-navy-100">
             <input
               type="checkbox"
               checked={rollover}
@@ -117,7 +117,7 @@ export function DepositsManager({ deposits, accountId }: { deposits: DepositVM[]
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-navy-950">Term deposits</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-white">Term deposits</h1>
           <p className="mt-1 text-sm text-muted-foreground">Grow your savings with fixed-rate deposits.</p>
         </div>
         <OpenDepositDialog accountId={accountId} />
@@ -127,7 +127,7 @@ export function DepositsManager({ deposits, accountId }: { deposits: DepositVM[]
         <Card>
           <CardContent className="py-14 text-center">
             <PiggyBank className="mx-auto size-10 text-muted-foreground" />
-            <h3 className="mt-4 font-semibold text-navy-950">No deposits yet</h3>
+            <h3 className="mt-4 font-semibold text-white">No deposits yet</h3>
             <p className="mt-1 text-sm text-muted-foreground">Lock in competitive rates starting from 7 days.</p>
           </CardContent>
         </Card>
@@ -149,11 +149,11 @@ export function DepositsManager({ deposits, accountId }: { deposits: DepositVM[]
               <CardContent className="grid grid-cols-2 gap-3 text-sm">
                 <div className="rounded-lg bg-muted px-3 py-2">
                   <p className="text-xs text-muted-foreground">Matures</p>
-                  <p className="font-semibold text-navy-950">{formatDate(dep.maturityDate)}</p>
+                  <p className="font-semibold text-navy-100">{formatDate(dep.maturityDate)}</p>
                 </div>
                 <div className="rounded-lg bg-muted px-3 py-2">
                   <p className="text-xs text-muted-foreground">Accrued interest</p>
-                  <p className="font-semibold text-emerald-600">{formatMoney(dep.interestAccrued, dep.currency)}</p>
+                  <p className="font-semibold text-emerald-400">{formatMoney(dep.interestAccrued, dep.currency)}</p>
                 </div>
               </CardContent>
             </Card>

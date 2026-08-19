@@ -187,10 +187,10 @@ export default function CryptoPage() {
     <div className="mx-auto max-w-5xl space-y-6">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-navy-950">Crypto</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-white">Crypto</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Buy, sell and hold digital assets — custodial wallets with live market prices.
-            {priceStale && <span className="ml-2 text-amber-600">(prices delayed)</span>}
+            {priceStale && <span className="ml-2 text-amber-400">(prices delayed)</span>}
           </p>
         </div>
         <Badge variant="info" className="w-fit">Powered by CoinGecko</Badge>
@@ -209,16 +209,16 @@ export default function CryptoPage() {
               onClick={() => setAsset(a)}
               className={cn(
                 "rounded-2xl border bg-card p-5 text-left shadow-sm transition-all hover:-translate-y-0.5",
-                asset === a ? "border-brand-500 ring-2 ring-brand-200" : "border-border"
+                asset === a ? "border-brand-400 ring-2 ring-brand-400/30" : "border-border"
               )}
             >
               <div className="flex items-center justify-between">
-                <div className="flex size-9 items-center justify-center rounded-full bg-brand-50 text-brand-600">
+                <div className="flex size-9 items-center justify-center rounded-full bg-brand-600/20 text-brand-300">
                   <Icon className="size-4.5" />
                 </div>
                 <Badge variant={change >= 0 ? "success" : "destructive"}>{change >= 0 ? "+" : ""}{change.toFixed(2)}%</Badge>
               </div>
-              <p className="mt-4 font-semibold text-navy-950">{a}</p>
+              <p className="mt-4 font-semibold text-navy-100">{a}</p>
               <p className="text-xs text-muted-foreground">{p ? `$${Number(p.price_usd).toLocaleString()}` : "…"}</p>
             </button>
           );
@@ -230,7 +230,7 @@ export default function CryptoPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <ArrowLeftRight className="size-4 text-brand-600" /> Trade
+              <ArrowLeftRight className="size-4 text-brand-400" /> Trade
             </CardTitle>
             <CardDescription>Convert fiat to crypto and back at the live rate.</CardDescription>
           </CardHeader>
@@ -291,7 +291,7 @@ export default function CryptoPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Wallet className="size-4 text-brand-600" /> Your wallets
+                <Wallet className="size-4 text-brand-400" /> Your wallets
               </CardTitle>
               <CardDescription>Custodial balances in your bank account.</CardDescription>
             </CardHeader>
@@ -305,16 +305,16 @@ export default function CryptoPage() {
                   {wallets.map((w) => (
                     <li key={w.asset} className="flex items-center justify-between py-3">
                       <div className="flex items-center gap-3">
-                        <div className="flex size-8 items-center justify-center rounded-full bg-navy-100 text-navy-600">
+                        <div className="flex size-8 items-center justify-center rounded-full bg-white/10 text-navy-200">
                           {(() => { const I = ASSET_ICONS[w.asset] ?? Coins; return <I className="size-4" />; })()}
                         </div>
                         <div>
-                          <p className="text-sm font-semibold text-navy-950">{w.asset}</p>
+                          <p className="text-sm font-semibold text-navy-100">{w.asset}</p>
                           <p className="font-mono text-xs text-muted-foreground">{w.address?.slice(0, 10)}…</p>
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm font-bold text-navy-950">
+                        <p className="text-sm font-bold text-navy-100">
                           {Number(w.balance).toLocaleString(undefined, { maximumFractionDigits: 8 })} {w.asset}
                         </p>
                         {prices[w.asset] && (
@@ -343,8 +343,8 @@ export default function CryptoPage() {
                   {orders.slice(0, 6).map((o) => (
                     <li key={o.id} className="flex items-center justify-between py-2.5 text-sm">
                       <div>
-                        <p className="font-medium text-navy-950">
-                          <span className={cn(o.side === "buy" ? "text-emerald-600" : "text-red-600")}>
+                        <p className="font-medium text-navy-100">
+                          <span className={cn(o.side === "buy" ? "text-emerald-400" : "text-rose-400")}>
                             {o.side === "buy" ? "Bought" : "Sold"}
                           </span> {o.asset}
                         </p>

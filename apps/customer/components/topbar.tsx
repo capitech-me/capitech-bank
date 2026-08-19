@@ -46,7 +46,7 @@ export function Topbar({ userName, userEmail, unreadCount, mfaEnabled }: TopbarP
     <header className="flex h-16 items-center justify-between border-b border-border bg-card px-4 sm:px-6">
       <div>
         <h2 className="text-sm font-medium text-muted-foreground sm:text-base">Welcome back</h2>
-        <p className="hidden text-sm font-semibold text-navy-950 sm:block">{userName}</p>
+        <p className="hidden text-sm font-semibold text-navy-100 sm:block">{userName}</p>
       </div>
 
       <div className="flex items-center gap-2">
@@ -65,7 +65,7 @@ export function Topbar({ userName, userEmail, unreadCount, mfaEnabled }: TopbarP
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="gap-2 px-2">
               <Avatar className="size-8">
-                <AvatarFallback className="bg-brand-100 text-brand-700">{initials || "U"}</AvatarFallback>
+                <AvatarFallback className="bg-brand-600/30 text-brand-200">{initials || "U"}</AvatarFallback>
               </Avatar>
               <span className="hidden max-w-32 truncate text-sm font-medium md:block">{userName}</span>
               <ChevronDown className="size-4 text-muted-foreground" />
@@ -73,7 +73,7 @@ export function Topbar({ userName, userEmail, unreadCount, mfaEnabled }: TopbarP
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
             <DropdownMenuLabel>
-              <p className="text-sm font-medium text-navy-950">{userName}</p>
+              <p className="text-sm font-medium text-navy-100">{userName}</p>
               <p className="text-xs font-normal text-muted-foreground">{userEmail}</p>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
@@ -93,7 +93,7 @@ export function Topbar({ userName, userEmail, unreadCount, mfaEnabled }: TopbarP
               {mfaEnabled ? "MFA enabled" : "MFA not enabled"}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleSignOut} className="text-red-600 focus:text-red-600">
+            <DropdownMenuItem onClick={handleSignOut} className="text-rose-400 focus:text-rose-400">
               <LogOut className="size-4" /> Sign out
             </DropdownMenuItem>
           </DropdownMenuContent>

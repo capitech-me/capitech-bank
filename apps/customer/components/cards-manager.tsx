@@ -135,7 +135,7 @@ export function CardsManager({ cards, defaultAccountId }: { cards: CardVM[]; def
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-navy-950">Virtual cards</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-white">Virtual cards</h1>
           <p className="mt-1 text-sm text-muted-foreground">Create, control and freeze cards in seconds.</p>
         </div>
         <CreateCardDialog accountId={defaultAccountId} />
@@ -145,7 +145,7 @@ export function CardsManager({ cards, defaultAccountId }: { cards: CardVM[]; def
         <Card>
           <CardContent className="py-14 text-center">
             <CreditCard className="mx-auto size-10 text-muted-foreground" />
-            <h3 className="mt-4 font-semibold text-navy-950">No cards yet</h3>
+            <h3 className="mt-4 font-semibold text-white">No cards yet</h3>
             <p className="mt-1 text-sm text-muted-foreground">Create your first virtual card to start spending online.</p>
           </CardContent>
         </Card>
@@ -178,11 +178,11 @@ export function CardsManager({ cards, defaultAccountId }: { cards: CardVM[]; def
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   <div className="rounded-lg bg-muted px-3 py-2">
                     <p className="text-xs text-muted-foreground">Daily limit</p>
-                    <p className="font-semibold text-navy-950">{card.dailyLimit ? formatMoney(card.dailyLimit, "USD") : "—"}</p>
+                    <p className="font-semibold text-navy-100">{card.dailyLimit ? formatMoney(card.dailyLimit, "USD") : "—"}</p>
                   </div>
                   <div className="rounded-lg bg-muted px-3 py-2">
                     <p className="text-xs text-muted-foreground">Expiry</p>
-                    <p className="font-semibold text-navy-950">{formatCardExpiry(card.expMonth, card.expYear)}</p>
+                    <p className="font-semibold text-navy-100">{formatCardExpiry(card.expMonth, card.expYear)}</p>
                   </div>
                 </div>
               </CardContent>

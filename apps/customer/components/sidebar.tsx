@@ -41,7 +41,7 @@ export function Sidebar() {
     <div className="flex h-full flex-col">
       <div className="flex h-16 items-center border-b border-border px-5">
         <Link href="/" aria-label="Capitech Bank home">
-          <Logo />
+          <Logo dark />
         </Link>
       </div>
       <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
@@ -54,13 +54,13 @@ export function Sidebar() {
               onClick={() => setOpen(false)}
               className={cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
-                active ? "bg-brand-50 text-brand-700" : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                active ? "bg-brand-600/20 text-brand-200" : "text-navy-300 hover:bg-white/5 hover:text-white"
               )}
             >
               <item.icon className="size-4.5" />
               {item.label}
               {item.badge && (
-                <span className="ml-auto rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+                <span className="ml-auto rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-medium text-navy-300">
                   {item.badge}
                 </span>
               )}
@@ -78,7 +78,7 @@ export function Sidebar() {
               onClick={() => setOpen(false)}
               className={cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
-                active ? "bg-brand-50 text-brand-700" : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                active ? "bg-brand-600/20 text-brand-200" : "text-navy-300 hover:bg-white/5 hover:text-white"
               )}
             >
               <item.icon className="size-4.5" />
@@ -100,7 +100,7 @@ export function Sidebar() {
       {/* Mobile header + sheet */}
       <div className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-border bg-card px-4 lg:hidden">
         <Link href="/" aria-label="Capitech Bank home">
-          <Logo />
+          <Logo dark />
         </Link>
         <button
           type="button"

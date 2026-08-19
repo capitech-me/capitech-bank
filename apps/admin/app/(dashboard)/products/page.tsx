@@ -8,7 +8,7 @@ export default async function ProductsPage() {
   return (
     <div className="mx-auto max-w-6xl space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-navy-950">Products</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-white">Products</h1>
         <p className="mt-1 text-sm text-muted-foreground">Banking products available to customers.</p>
       </div>
 
@@ -19,7 +19,7 @@ export default async function ProductsPage() {
               <Badge variant="info" className="font-mono">{p.code}</Badge>
               <Badge variant={p.status === "active" ? "success" : "neutral"}>{p.status}</Badge>
             </div>
-            <h3 className="mt-3 font-semibold text-navy-950">{p.name}</h3>
+            <h3 className="mt-3 font-semibold text-white">{p.name}</h3>
             <p className="mt-0.5 text-sm capitalize text-muted-foreground">
               {humanize(p.productType)} {p.currency ? `· ${p.currency}` : ""}
             </p>
@@ -27,13 +27,13 @@ export default async function ProductsPage() {
               {p.interestRate && (
                 <p className="flex justify-between">
                   <span className="text-muted-foreground">Interest rate</span>
-                  <span className="font-medium text-navy-950">{formatPercent(p.interestRate)}</span>
+                  <span className="font-medium text-navy-100">{formatPercent(p.interestRate)}</span>
                 </p>
               )}
               {p.monthlyFee !== null && p.monthlyFee !== undefined && (
                 <p className="flex justify-between">
                   <span className="text-muted-foreground">Monthly fee</span>
-                  <span className="font-medium text-navy-950">
+                  <span className="font-medium text-navy-100">
                     {Number(p.monthlyFee) === 0 ? "Free" : formatMoney(p.monthlyFee, p.currency ?? "USD")}
                   </span>
                 </p>

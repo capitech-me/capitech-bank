@@ -76,8 +76,8 @@ export function VerifyButton({
           className="mt-0.5 size-4 rounded border-border accent-brand-600"
         />
         <span>
-          I consent to <span className="font-medium text-navy-950">Capitech Bank</span> and its
-          verification partner <span className="font-medium text-navy-950">Didit</span> collecting
+          I consent to <span className="font-medium text-navy-100">Capitech Bank</span> and its
+          verification partner <span className="font-medium text-navy-100">Didit</span> collecting
           and processing my identity documents, biometric data and device information to verify my
           identity (KYC), screen against sanctions and PEP lists, and prevent fraud. Data is
           processed in line with our{" "}
@@ -103,7 +103,7 @@ export function VerifyButton({
 /** Static status chip for display only. */
 export function VerifyStatusChip() {
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700">
+    <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-medium text-emerald-300">
       <ShieldCheck className="size-3.5" /> Verified
     </span>
   );
