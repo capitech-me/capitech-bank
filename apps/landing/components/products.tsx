@@ -13,7 +13,7 @@ import { Badge } from "@capitech/ui";
 const PRODUCTS = [
   {
     id: "personal",
-    href: "/sign-up?type=retail",
+    href: "/personal",
     icon: User,
     badge: "Most popular",
     title: "Personal Banking",
@@ -23,7 +23,7 @@ const PRODUCTS = [
   },
   {
     id: "business",
-    href: "/sign-up?type=retail",
+    href: "/business",
     icon: Building2,
     title: "Business Banking",
     description:

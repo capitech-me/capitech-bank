@@ -6,8 +6,8 @@ import { Menu, X, ArrowRight } from "lucide-react";
 import { Button, Logo } from "@capitech/ui";
 
 const NAV_LINKS = [
-  { href: "#personal", label: "Personal" },
-  { href: "#business", label: "Business" },
+  { href: "/personal", label: "Personal" },
+  { href: "/business", label: "Business" },
   { href: "#features", label: "Features" },
   { href: "#developers", label: "Developers" },
   { href: "#faq", label: "FAQ" },

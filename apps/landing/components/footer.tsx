@@ -6,8 +6,8 @@ const COLUMNS = [
   {
     title: "Banking",
     links: [
-      { label: "Personal", href: "#personal" },
-      { label: "Business", href: "#business" },
+      { label: "Personal", href: "/personal" },
+      { label: "Business", href: "/business" },
       { label: "Crypto", href: "#products" },
       { label: "Virtual cards", href: "#products" },
     ],

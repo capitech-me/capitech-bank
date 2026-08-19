@@ -110,7 +110,7 @@ function SignUpForm() {
               )}
             >
               {type === "retail" ? <User className="size-5" /> : <Building2 className="size-5" />}
-              {type === "retail" ? "Personal" : "Business / Corporate"}
+              {type === "retail" ? "Personal" : "Business"}
             </button>
           ))}
         </div>
