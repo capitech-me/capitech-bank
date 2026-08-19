@@ -4,6 +4,7 @@
 > landing at the root, customer app under `/app`, admin app under `/admin`.
 
 **Live domain:** `https://online.capitech.me`
+**Last updated:** Aug 2026
 
 ---
 
@@ -36,7 +37,7 @@
 | `/app/transfers` | Transfers |
 | `/app/cards` | Virtual & physical cards |
 | `/app/deposits` | Term deposits |
-| `/app/crypto` | Crypto — buy/sell, wallets, orders |
+| `/app/crypto` | Crypto — buy/sell, wallets, orders (Alpha Vantage prices, LIVE) |
 | `/app/statements` | Statements — PDF/CSV |
 | `/app/notifications` | Notifications |
 | `/app/profile` | Profile & Security — MFA |
@@ -47,7 +48,7 @@
 |---|---|
 | `/app/api/verify` | Didit KYC session |
 | `/app/api/webhooks/didit` | Didit HMAC webhook |
-| `/app/api/crypto/prices` | CoinGecko price proxy |
+| `/app/api/crypto/prices` | Alpha Vantage price proxy (cache-first + round-robin refresh) |
 | `/app/api/emails/send` | Transactional email send |
 | `/app/api/statements/[accountId]` | Statement download |
 | `/app/api/open/v1/accounts` | Open API — accounts |
@@ -92,6 +93,17 @@
 | Admin | 10 + 4 API routes | Staff login |
 | **Total** | **29 UI pages** | |
 
+## 🔌 External integrations
+
+| Service | Key env var | Used for | Status |
+|---|---|---|---|
+| Supabase (`hekufxbeigxzkyfsqalx`) | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` | DB + Auth + RLS + MFA | ✅ Live |
+| Alpha Vantage | `ALPHAVANTAGE_API_KEY` | Crypto live prices | ✅ Live |
+| Resend | `RESEND_API_KEY` (+ SMTP for Supabase Auth) | Transactional email + confirmation | ✅ Live |
+| Didit | `DIDIT_API_KEY`, `DIDIT_WEBHOOK_SECRET` | KYC identity verification | ✅ Live |
+| Vercel | `VERCEL_OIDC_TOKEN` | Deployments | ✅ Live |
+| GitHub | gh CLI token | CI/CD | ✅ Live |
+
 ---
 
 ## 🔑 Demo credentials
@@ -122,3 +134,26 @@
 | Developers | Open API → `/developers#open-api`, API docs → `/developers#api-docs`, Sandbox → `/developers#sandbox`, Webhooks → `/developers#webhooks` |
 | Company | About → `/about`, Contact → `/contact` |
 | Legal | Privacy → `/legal#privacy`, Terms → `/legal#terms`, Cookies → `/legal#cookies`, Regulatory → `/legal#regulatory` |
+
+---
+
+## 🔄 Version control workflow (maintained by HAKEM)
+
+**Source of truth:** `E:\Ai Project\Capitech` (Git repo) · **Remote:** `github.com/capitech-me/capitech-bank` · **Build/deploy:** `C:\AI Projects\Capitech` (NTFS working copy)
+
+For **every major change** the following process is followed:
+
+1. **Edit** in `E:` (the git repo — source of truth)
+2. **Sync** edited files to `C:` (`robocopy /E /XO` excluding node_modules/.next/.turbo/.git)
+3. **Build** in `C:` (`pnpm --filter <app> build`) — E: is FAT32 and can't run pnpm
+4. **Deploy** to Vercel from `C:` root (swap `.vercel/project.json` per app)
+5. **Commit** in `E:` with a descriptive message (conventional-style: `feat:`/`fix:`/`docs:`/`style:`/`chore:`)
+6. **Push** to `origin master` → GitHub Actions CI validates (lint + typecheck + build)
+7. **Verify** live on `online.capitech.me`
+
+**Commit rules:**
+- Secrets (`.env.local`) are gitignored — never committed
+- `JSON/capitech-bank-full-digital-bank-plan.json` (session archive) stays out of commits
+- Commit author: `Capitech Advisory <capitechadvisory@gmail.com>` (matches GitHub — avoids Vercel deploy blocks)
+
+**Deploy caveat:** always deploy from `C:` (E:'s JSON session archive mutates during uploads and breaks Vercel's file hash check).
