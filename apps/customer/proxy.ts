@@ -51,8 +51,14 @@ export async function proxy(request: NextRequest) {
   }
 
   if (user) {
-    // Staff belong in the back office (admin app)
-    const { data: profile } = await supabase.from("profiles").select("role").maybeSingle();
+    // Staff belong in the back office (admin app). Scope to the authenticated
+    // user so staff (whose RLS covers all profiles) don't get a multi-row
+    // maybeSingle() failure.
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .maybeSingle();
     const role = profile?.role;
     if (role && (role.startsWith("staff_") || role === "super_admin")) {
       return NextResponse.redirect(new URL(path, ADMIN_URL));

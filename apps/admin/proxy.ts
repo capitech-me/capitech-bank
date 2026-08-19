@@ -43,9 +43,15 @@ export async function proxy(request: NextRequest) {
 
   // Only staff roles may use the back office.
   // If the profile lookup fails, fail closed and send to sign-in rather than crash.
+  // Scope to the authenticated user: staff RLS lets them read every profile, so
+  // an unfiltered maybeSingle() returns multiple rows and silently fails.
   let profile: { role?: string | null } | null = null;
   try {
-    const { data } = await supabase.from("profiles").select("role").maybeSingle();
+    const { data } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .maybeSingle();
     profile = data;
   } catch {
     const url = new URL("/sign-in", LANDING_URL);

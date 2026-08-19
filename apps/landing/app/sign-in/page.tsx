@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, LockKeyhole, Mail, ShieldCheck } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle, Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input, Label, Logo } from "@capitech/ui";
@@ -15,6 +15,35 @@ export default function SignInPage() {
   const [loading, setLoading] = useState(false);
 
   const supabaseConfigured = !!process.env.NEXT_PUBLIC_SUPABASE_URL && !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  // Self-heal: the customer/admin apps redirect unauthenticated visitors back
+  // to /sign-in. If the session cookie hasn't propagated yet when that
+  // bounce happens (multi-zone rewrite race), re-detect the session here and
+  // forward the already-signed-in user to their app instead of stranding them.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      if (!supabaseConfigured) return;
+      const supabase = getSupabaseBrowserClient();
+      const { data: userData } = await supabase.auth.getUser();
+      if (cancelled || !userData.user) return;
+      let role: string | null = null;
+      try {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("role")
+          .eq("id", userData.user.id)
+          .maybeSingle();
+        role = profile?.role ?? null;
+      } catch {
+        // table may not exist yet — treat as customer
+      }
+      window.location.href = getPostAuthRedirect(role);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [supabaseConfigured]);
 
   async function handlePasswordSignIn() {
     setError(null);
@@ -65,8 +94,18 @@ export default function SignInPage() {
     const supabase = getSupabaseBrowserClient();
     let role: string | null = null;
     try {
-      const { data: profile } = await supabase.from("profiles").select("role").maybeSingle();
-      role = profile?.role ?? null;
+      // Scope the profile lookup to the signed-in user. Staff RLS lets them
+      // read every profile, so an unfiltered maybeSingle() returns multiple
+      // rows and throws — which used to fall through to the customer app.
+      const { data: userData } = await supabase.auth.getUser();
+      if (userData.user) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("role")
+          .eq("id", userData.user.id)
+          .maybeSingle();
+        role = profile?.role ?? null;
+      }
     } catch {
       // table may not exist yet — treat as customer
     }

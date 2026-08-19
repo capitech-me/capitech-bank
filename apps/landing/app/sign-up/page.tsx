@@ -37,7 +37,7 @@ function SignUpForm() {
       email,
       password,
       options: {
-        emailRedirectTo: `${siteUrl}/auth/callback?next=/onboarding`,
+        emailRedirectTo: `${siteUrl}/auth/callback?next=/app/onboarding`,
         data: {
           first_name: firstName,
           last_name: lastName,
