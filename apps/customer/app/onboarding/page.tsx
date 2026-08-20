@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
@@ -80,6 +80,42 @@ export default function OnboardingPage() {
 
   const retailValid =
     legalFirst && legalLast && dob && nationality && residence && address && city;
+
+  // Prefill from sign-up user_metadata (collected by the landing 3-step wizard).
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      if (!isSupabaseConfigured()) return;
+      const supabase = getBrowserClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (cancelled || !user) return;
+      const m = user.user_metadata ?? {};
+      if (m.account_type === "corporate") setType("corporate");
+      // Shared / retail (KYC)
+      if (typeof m.first_name === "string") setLegalFirst(m.first_name);
+      if (typeof m.last_name === "string") setLegalLast(m.last_name);
+      if (typeof m.date_of_birth === "string") setDob(m.date_of_birth);
+      if (typeof m.nationality === "string") setNationality(m.nationality);
+      if (typeof m.country_of_residence === "string") setResidence(m.country_of_residence);
+      if (typeof m.address_line1 === "string") setAddress(m.address_line1);
+      if (typeof m.city === "string") setCity(m.city);
+      if (typeof m.occupation === "string") setOccupation(m.occupation);
+      if (typeof m.source_of_funds === "string") setSourceOfFunds(m.source_of_funds);
+      if (typeof m.is_pep === "boolean") setIsPep(m.is_pep);
+      // Corporate (KYB)
+      if (typeof m.company_legal_name === "string") setLegalName(m.company_legal_name);
+      if (typeof m.registration_number === "string") setRegNumber(m.registration_number);
+      if (typeof m.country_of_incorporation === "string") setIncorpCountry(m.country_of_incorporation);
+      if (typeof m.entity_type === "string") setEntityType(m.entity_type);
+      if (typeof m.industry === "string") setIndustry(m.industry);
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function submitOnboarding() {
     setSubmitting(true);
