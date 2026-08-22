@@ -8,6 +8,10 @@ github: [capitech-me]
 # Ko-fi
 ko_fi: capitechadvisory
 
+# Custom links (max 4) — PayPal, Stripe, or any donation URL
+custom:
+  - https://www.paypal.com/ncp/payment/5S9M3JBFUTV42
+
 # Patreon
 # patreon: capitech
 
@@ -22,6 +26,3 @@ ko_fi: capitechadvisory
 
 # IssueHunt
 # issuehunt: capitech
-
-# Custom links (max 4)
-custom: []
