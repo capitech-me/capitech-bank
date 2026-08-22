@@ -60,7 +60,7 @@ export async function GET(req: Request) {
     .select("asset, price_usd, change_24h, market_cap, updated_at")
     .in("asset", requested);
 
-  let cacheMap = new Map<string, { price_usd: string; change_24h: string; market_cap: string | null; updated_at: string }>();
+  const cacheMap = new Map<string, { price_usd: string; change_24h: string; market_cap: string | null; updated_at: string }>();
   if (!error && cached) {
     for (const row of cached) {
       cacheMap.set(row.asset, row);
