@@ -65,9 +65,12 @@ export function Hero() {
                 asChild
                 size="xl"
                 variant="outline"
-                className="w-full border-accent-500/40 bg-accent-500/10 text-accent-300 hover:bg-accent-500/20 sm:w-auto"
+                className="w-full border-accent-400/60 bg-accent-500/15 font-semibold text-accent-300 shadow-lg shadow-accent-500/10 hover:border-accent-300 hover:bg-accent-500/25 hover:text-white sm:w-auto"
               >
-                <Link href="/sign-in?demo=1">Try demo</Link>
+                <Link href="/sign-in?demo=1">
+                  <Zap className="size-5" />
+                  Try demo
+                </Link>
               </Button>
             </div>
 
