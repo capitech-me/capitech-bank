@@ -21,7 +21,7 @@ function SignInForm() {
   // "Try demo" — /sign-in?demo=1 fills the demo credentials and signs in.
   // A ref flag guarantees it only fires once. The sign-in uses the literal
   // demo credentials directly (bypassing the stale-closure state problem),
-  // then forwards to the customer app.
+  // then forwards to the customer app (customer role -> /app).
   const demoHandled = useRef(false);
   useEffect(() => {
     if (searchParams.get("demo") !== "1" || demoHandled.current) return;
@@ -36,7 +36,8 @@ function SignInForm() {
         password: "CapitechJane2026!",
       });
       if (!signInError && data.session) {
-        await redirectToApp();
+        const customerUrl = process.env.NEXT_PUBLIC_CUSTOMER_APP_URL ?? "http://localhost:3001";
+        window.location.href = customerUrl;
       }
     }, 100);
     return () => clearTimeout(t);
