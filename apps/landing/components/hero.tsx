@@ -61,6 +61,14 @@ export function Hero() {
               >
                 <Link href="#products">Explore services</Link>
               </Button>
+              <Button
+                asChild
+                size="xl"
+                variant="outline"
+                className="w-full border-accent-500/40 bg-accent-500/10 text-accent-300 hover:bg-accent-500/20 sm:w-auto"
+              >
+                <Link href="/sign-in?demo=1">Try demo</Link>
+              </Button>
             </div>
 
             <p className="mt-5 text-sm text-navy-400">

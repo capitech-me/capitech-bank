@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { Sidebar } from "@/components/sidebar";
 import { Topbar } from "@/components/topbar";
 import { getServerClient } from "@/lib/supabase-server";
@@ -11,20 +12,33 @@ export default async function DashboardLayout({ children }: { children: React.Re
     const supabase = await getServerClient();
     const { data: userData } = await supabase.auth.getUser();
     const user = userData.user;
-    if (user) {
-      const { data: profile } = await supabase.from("profiles").select("first_name, last_name, role").maybeSingle();
-      if (profile) {
-        userName = [profile.first_name, profile.last_name].filter(Boolean).join(" ") || userName;
-        const labels: Record<string, string> = {
-          staff_teller: "Teller",
-          staff_operations: "Operations Officer",
-          staff_compliance: "Compliance Officer",
-          staff_accountant: "Accountant",
-          staff_admin: "Administrator",
-          super_admin: "Super Admin",
-        };
-        roleLabel = labels[profile.role] ?? roleLabel;
-      }
+
+    // Server-side guard: no session or non-staff => back to sign-in.
+    // Catches the bare /admin root too, which the edge proxy's matcher can
+    // miss under the basePath rewrite.
+    if (!user) {
+      redirect("/sign-in");
+    }
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("first_name, last_name, role")
+      .eq("id", user.id)
+      .maybeSingle();
+    const role = profile?.role;
+    if (!role || !(role.startsWith("staff_") || role === "super_admin")) {
+      redirect("/sign-in");
+    }
+    if (profile) {
+      userName = [profile.first_name, profile.last_name].filter(Boolean).join(" ") || userName;
+      const labels: Record<string, string> = {
+        staff_teller: "Teller",
+        staff_operations: "Operations Officer",
+        staff_compliance: "Compliance Officer",
+        staff_accountant: "Accountant",
+        staff_admin: "Administrator",
+        super_admin: "Super Admin",
+      };
+      roleLabel = labels[role] ?? roleLabel;
     }
   }
 

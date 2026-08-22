@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { ArrowRight, LockKeyhole, Mail, ShieldCheck } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle, Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input, Label, Logo } from "@capitech/ui";
 import { getSupabaseBrowserClient, getPostAuthRedirect } from "@/lib/auth";
 
-export default function SignInPage() {
+function SignInForm() {
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [mfaCode, setMfaCode] = useState("");
@@ -15,6 +17,20 @@ export default function SignInPage() {
   const [loading, setLoading] = useState(false);
 
   const supabaseConfigured = !!process.env.NEXT_PUBLIC_SUPABASE_URL && !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  // "Try demo" — /sign-in?demo=1 fills the demo credentials and signs in.
+  useEffect(() => {
+    if (searchParams.get("demo") !== "1") return;
+    setEmail("jane@capitech.me");
+    setPassword("CapitechJane2026!");
+    // auto-submit after a short beat so the form is hydrated
+    const t = setTimeout(() => {
+      const form = document.querySelector("form");
+      form?.requestSubmit();
+    }, 600);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   // Self-heal: the customer/admin apps redirect unauthenticated visitors back
   // to /sign-in. If the session cookie hasn't propagated yet when that
@@ -247,5 +263,13 @@ export default function SignInPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function SignInPage() {
+  return (
+    <Suspense>
+      <SignInForm />
+    </Suspense>
   );
 }

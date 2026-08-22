@@ -70,6 +70,10 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
+    // Include the bare basePath root explicitly: Next.js basePath rewrites
+    // can serve the static root before the broad matcher catches it.
+    "/admin",
+    "/admin/:path*",
     "/((?!_next/static|_next/image|favicon.ico|api|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
   ],
 };
