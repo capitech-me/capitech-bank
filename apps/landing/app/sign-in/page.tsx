@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { ArrowRight, LockKeyhole, Mail, ShieldCheck } from "lucide-react";
@@ -19,18 +19,26 @@ function SignInForm() {
   const supabaseConfigured = !!process.env.NEXT_PUBLIC_SUPABASE_URL && !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   // "Try demo" — /sign-in?demo=1 fills the demo credentials and signs in.
+  // A ref flag guarantees it only fires once. The sign-in uses the literal
+  // demo credentials directly (bypassing the stale-closure state problem),
+  // then forwards to the customer app.
+  const demoHandled = useRef(false);
   useEffect(() => {
-    if (searchParams.get("demo") !== "1") return;
-    // Defer the state updates + submit out of the synchronous effect body so
-    // React doesn't cascade renders (avoids react-hooks set-state-in-effect).
-    const t = setTimeout(() => {
+    if (searchParams.get("demo") !== "1" || demoHandled.current) return;
+    demoHandled.current = true;
+    const t = setTimeout(async () => {
+      // Fill the visible inputs for the user to see, then sign in directly.
       setEmail("jane@capitech.me");
       setPassword("CapitechJane2026!");
-      setTimeout(() => {
-        const form = document.querySelector("form");
-        form?.requestSubmit();
-      }, 0);
-    }, 50);
+      const supabase = getSupabaseBrowserClient();
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
+        email: "jane@capitech.me",
+        password: "CapitechJane2026!",
+      });
+      if (!signInError && data.session) {
+        await redirectToApp();
+      }
+    }, 100);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
