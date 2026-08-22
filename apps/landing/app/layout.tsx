@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
+import { Analytics } from "@vercel/analytics/react";
 import { Toaster } from "@capitech/ui";
 import "./globals.css";
 
@@ -49,6 +50,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col bg-navy-950">
         {children}
         <Toaster position="top-center" richColors />
+        <Analytics />
       </body>
     </html>
   );
