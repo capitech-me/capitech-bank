@@ -21,13 +21,16 @@ function SignInForm() {
   // "Try demo" — /sign-in?demo=1 fills the demo credentials and signs in.
   useEffect(() => {
     if (searchParams.get("demo") !== "1") return;
-    setEmail("jane@capitech.me");
-    setPassword("CapitechJane2026!");
-    // auto-submit after a short beat so the form is hydrated
+    // Defer the state updates + submit out of the synchronous effect body so
+    // React doesn't cascade renders (avoids react-hooks set-state-in-effect).
     const t = setTimeout(() => {
-      const form = document.querySelector("form");
-      form?.requestSubmit();
-    }, 600);
+      setEmail("jane@capitech.me");
+      setPassword("CapitechJane2026!");
+      setTimeout(() => {
+        const form = document.querySelector("form");
+        form?.requestSubmit();
+      }, 0);
+    }, 50);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
