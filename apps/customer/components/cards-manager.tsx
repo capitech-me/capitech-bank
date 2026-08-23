@@ -39,10 +39,31 @@ function CreateCardDialog({ accountId }: { accountId: string }) {
     setLoading(true);
     if (isSupabaseConfigured()) {
       const supabase = getBrowserClient();
-      await supabase.auth.getUser();
+      const { data: userData } = await supabase.auth.getUser();
+      const userId = userData.user?.id;
       const last4 = Math.floor(1000 + Math.random() * 9000).toString();
-      const { error } = await supabase.from("cards").insert({
+
+      // Resolve the tenant the card belongs to (required, NOT NULL) and the
+      // customer record linked to this profile (optional but correct to set).
+      let tenantId: string | null = null;
+      let customerId: string | null = null;
+      if (userId) {
+        const [profile, customer] = await Promise.all([
+          supabase.from("profiles").select("tenant_id").eq("id", userId).maybeSingle(),
+          supabase.from("customers").select("id").eq("profile_id", userId).maybeSingle(),
+        ]);
+        tenantId = (profile.data?.tenant_id as string | null) ?? null;
+        customerId = (customer.data?.id as string | null) ?? null;
+      }
+      if (!tenantId) {
+        toast.error("Unable to identify your tenant — please try again.");
+        setLoading(false);
+        return;
+      }
+
+      const insertPayload: Record<string, unknown> = {
         account_id: accountId,
+        tenant_id: tenantId,
         brand,
         last4,
         token: `tok_${Math.random().toString(36).slice(2)}`,
@@ -51,7 +72,10 @@ function CreateCardDialog({ accountId }: { accountId: string }) {
         status: "active",
         name_on_card: nameOnCard.toUpperCase(),
         daily_limit: dailyLimit,
-      });
+      };
+      if (customerId) insertPayload.customer_id = customerId;
+
+      const { error } = await supabase.from("cards").insert(insertPayload);
       if (error) {
         toast.error(error.message);
         setLoading(false);

@@ -42,6 +42,13 @@ export default async function AccountsPage() {
                   <td className="px-4 py-3 text-muted-foreground">{formatDate(a.createdAt)}</td>
                 </tr>
               ))}
+              {accounts.length === 0 && (
+                <tr>
+                  <td colSpan={7} className="px-4 py-12 text-center text-muted-foreground">
+                    No accounts yet.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>

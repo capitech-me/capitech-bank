@@ -22,6 +22,34 @@ export function ApproveKycButton({ itemId }: { itemId: string }) {
         setBusy(null);
         return;
       }
+
+      // Approval also activates the customer's accounts so they can bank.
+      // customers has no status column, so we flip their accounts (created
+      // "pending" by open_account) to "active".
+      if (action === "approve") {
+        const { data: accounts, error: accountsError } = await supabase
+          .from("accounts")
+          .select("id")
+          .eq("owner_type", "customer")
+          .eq("owner_id", itemId)
+          .neq("status", "active");
+        if (accountsError) {
+          toast.error(accountsError.message);
+          setBusy(null);
+          return;
+        }
+        if (accounts && accounts.length > 0) {
+          const { error: activateError } = await supabase
+            .from("accounts")
+            .update({ status: "active" })
+            .in("id", accounts.map((a) => a.id));
+          if (activateError) {
+            toast.error(activateError.message);
+            setBusy(null);
+            return;
+          }
+        }
+      }
     } else {
       await new Promise((r) => setTimeout(r, 500));
     }

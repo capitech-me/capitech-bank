@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { CreditCard, PiggyBank, Wallet } from "lucide-react";
 import { formatMoney, formatPercent, formatDate, maskCard } from "@capitech/lib";
-import { Badge } from "@capitech/ui";
+import { Badge, Button } from "@capitech/ui";
 import { BalanceCards, QuickActions } from "@/components/balance-cards";
 import { TransactionsCard } from "@/components/transaction-list";
 import { getAccounts, getCards, getDeposits, getNotifications, getTotalByCurrency, getTransactions } from "@/lib/data";
@@ -30,7 +30,18 @@ export default async function DashboardPage() {
         <QuickActions />
       </div>
 
-      <BalanceCards totals={totals} accountsCount={accounts.length} />
+      {accounts.length === 0 ? (
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-16 text-center">
+          <Wallet className="size-8 text-muted-foreground" />
+          <h3 className="mt-3 font-semibold text-white">No accounts yet</h3>
+          <p className="mt-1 text-sm text-muted-foreground">Open your first account to start banking with Capitech.</p>
+          <Button asChild className="mt-5">
+            <Link href="/accounts?open=1" prefetch={false}>Open an account</Link>
+          </Button>
+        </div>
+      ) : (
+        <BalanceCards totals={totals} accountsCount={accounts.length} />
+      )}
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">

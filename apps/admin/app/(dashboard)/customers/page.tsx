@@ -44,6 +44,13 @@ export default async function CustomersPage() {
                   <td className="px-4 py-3 text-muted-foreground">{formatDate(c.createdAt)}</td>
                 </tr>
               ))}
+              {customers.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="px-4 py-12 text-center text-muted-foreground">
+                    No customers found.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>

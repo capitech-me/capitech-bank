@@ -54,6 +54,13 @@ export default async function LedgerPage() {
                     </td>
                   </tr>
                 ))}
+                {coa.length === 0 && (
+                  <tr>
+                    <td colSpan={5} className="px-4 py-12 text-center text-muted-foreground">
+                      No chart of accounts entries yet.
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
@@ -85,6 +92,13 @@ export default async function LedgerPage() {
                     <td className="px-4 py-3 text-muted-foreground">{formatDateTime(j.entryDate)}</td>
                   </tr>
                 ))}
+                {journals.length === 0 && (
+                  <tr>
+                    <td colSpan={5} className="px-4 py-12 text-center text-muted-foreground">
+                      No journal entries yet.
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>

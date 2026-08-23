@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowDownLeft, ArrowUpRight, Loader2 } from "lucide-react";
+import { ArrowDownLeft, ArrowUpRight, Receipt } from "lucide-react";
 import { formatMoney, formatRelativeTime, humanize, TX_STATUS_LABELS } from "@capitech/lib";
 import { Badge, cn } from "@capitech/ui";
 import type { TransactionVM } from "@/lib/data";
@@ -22,7 +22,7 @@ export function TransactionList({ transactions }: { transactions: TransactionVM[
   if (transactions.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
-        <Loader2 className="size-8 text-muted-foreground" />
+        <Receipt className="size-8 text-muted-foreground" />
         <p className="mt-3 text-sm text-muted-foreground">No transactions yet.</p>
       </div>
     );

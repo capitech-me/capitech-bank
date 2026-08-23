@@ -191,13 +191,11 @@ interface AccountsRow {
   nickname: string | null;
   frozen: boolean;
   opened_at: string;
+  ledger_balance: string;
+  available_balance: string;
   products:
     | { name?: string; product_type?: string }
     | { name?: string; product_type?: string }[]
-    | null;
-  balances:
-    | { ledger_balance?: string; available_balance?: string }
-    | { ledger_balance?: string; available_balance?: string }[]
     | null;
 }
 
@@ -267,12 +265,11 @@ export async function getAccounts(): Promise<AccountVM[]> {
   const supabase = await getServerClient();
   const { data, error } = await supabase
     .from("accounts")
-    .select("*, products(name, product_type), balances(ledger_balance, available_balance)")
+    .select("*, products(name, product_type)")
     .order("created_at", { ascending: false });
-  if (error || !data) return demoAccounts;
+  if (error || !data) return [];
   return data.map((row: AccountsRow) => {
     const product = Array.isArray(row.products) ? row.products[0] : row.products;
-    const balance = Array.isArray(row.balances) ? row.balances[0] : row.balances;
     return {
       id: row.id,
       accountNo: row.account_no,
@@ -283,8 +280,8 @@ export async function getAccounts(): Promise<AccountVM[]> {
       currency: row.currency,
       status: row.status,
       nickname: row.nickname,
-      ledgerBalance: balance?.ledger_balance ?? "0",
-      availableBalance: balance?.available_balance ?? "0",
+      ledgerBalance: row.ledger_balance ?? "0",
+      availableBalance: row.available_balance ?? "0",
       frozen: row.frozen,
       openedAt: row.opened_at,
     };
@@ -304,7 +301,7 @@ export async function getTransactions(accountId?: string): Promise<TransactionVM
   let query = supabase.from("payment_orders").select("*").order("created_at", { ascending: false }).limit(50);
   if (accountId) query = query.eq("from_account_id", accountId);
   const { data, error } = await query;
-  if (error || !data) return demoTransactions;
+  if (error || !data) return [];
   return data.map((row: PaymentOrderRow) => ({
     id: row.id,
     txType: row.tx_type,
@@ -323,7 +320,7 @@ export async function getCards(): Promise<CardVM[]> {
   if (!isSupabaseConfigured()) return demoCards;
   const supabase = await getServerClient();
   const { data, error } = await supabase.from("cards").select("*").order("created_at", { ascending: false });
-  if (error || !data) return demoCards;
+  if (error || !data) return [];
   return data.map((row: CardsRow) => ({
     id: row.id,
     brand: row.brand,
@@ -343,7 +340,7 @@ export async function getDeposits(): Promise<DepositVM[]> {
   if (!isSupabaseConfigured()) return demoDeposits;
   const supabase = await getServerClient();
   const { data, error } = await supabase.from("deposits").select("*").order("created_at", { ascending: false });
-  if (error || !data) return demoDeposits;
+  if (error || !data) return [];
   return data.map((row: DepositsRow) => ({
     id: row.id,
     principal: row.principal,
@@ -362,7 +359,7 @@ export async function getProducts(): Promise<ProductVM[]> {
   if (!isSupabaseConfigured()) return demoProducts;
   const supabase = await getServerClient();
   const { data, error } = await supabase.from("products").select("*").eq("status", "active");
-  if (error || !data) return demoProducts;
+  if (error || !data) return [];
   return data.map((row: ProductsRow) => ({
     id: row.id,
     code: row.code,
@@ -380,7 +377,7 @@ export async function getNotifications(): Promise<NotificationVM[]> {
   if (!isSupabaseConfigured()) return demoNotifications;
   const supabase = await getServerClient();
   const { data, error } = await supabase.from("notifications").select("*").order("created_at", { ascending: false }).limit(20);
-  if (error || !data) return demoNotifications;
+  if (error || !data) return [];
   return data.map((row: NotificationsRow) => ({
     id: row.id,
     type: row.type,

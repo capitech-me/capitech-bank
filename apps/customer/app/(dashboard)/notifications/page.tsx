@@ -36,7 +36,9 @@ export default async function NotificationsPage() {
 
       {notifications.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-border py-16 text-center">
-          <p className="text-sm text-muted-foreground">No notifications yet.</p>
+          <Bell className="mx-auto size-10 text-muted-foreground" />
+          <h3 className="mt-4 font-semibold text-white">No notifications yet</h3>
+          <p className="mt-1 text-sm text-muted-foreground">Transaction alerts and account updates will appear here.</p>
         </div>
       ) : (
         <ul className="space-y-3">

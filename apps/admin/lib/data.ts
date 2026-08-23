@@ -291,7 +291,7 @@ export async function getKycQueue(): Promise<KycQueueItem[]> {
     .select("id, customer_no, legal_first_name, legal_last_name, customer_type, country_of_residence, kyc_status, risk_score, is_pep, created_at")
     .eq("kyc_status", "pending")
     .order("created_at", { ascending: false });
-  if (error || !data) return demoKycQueue;
+  if (error || !data) return [];
   return data.map((row: CustomersRow) => ({
     id: row.id,
     customerNo: row.customer_no,
@@ -308,7 +308,7 @@ export async function getCustomers(): Promise<CustomerRow[]> {
   if (!isSupabaseConfigured()) return demoCustomers;
   const supabase = await getServerClient();
   const { data, error } = await supabase.from("customers").select("*").order("created_at", { ascending: false }).limit(100);
-  if (error || !data) return demoCustomers;
+  if (error || !data) return [];
   return data.map((row: CustomersRow) => ({
     id: row.id,
     customerNo: row.customer_no,
@@ -326,7 +326,7 @@ export async function getAccounts(): Promise<AccountRow[]> {
   if (!isSupabaseConfigured()) return demoAccounts;
   const supabase = await getServerClient();
   const { data, error } = await supabase.from("accounts").select("*, products(name, product_type)").order("created_at", { ascending: false }).limit(100);
-  if (error || !data) return demoAccounts;
+  if (error || !data) return [];
   return data.map((row: AccountsRow) => {
     const product = Array.isArray(row.products) ? row.products[0] : row.products;
     return {
@@ -347,7 +347,7 @@ export async function getCoa(): Promise<CoaRow[]> {
   if (!isSupabaseConfigured()) return demoCoa;
   const supabase = await getServerClient();
   const { data, error } = await supabase.from("coa_accounts").select("*").order("code");
-  if (error || !data) return demoCoa;
+  if (error || !data) return [];
   return data.map((row: CoaRowInput) => ({
     code: row.code,
     name: row.name,
@@ -363,7 +363,7 @@ export async function getJournals(): Promise<JournalRow[]> {
   if (!isSupabaseConfigured()) return demoJournals;
   const supabase = await getServerClient();
   const { data, error } = await supabase.from("gl_entries").select("*").order("entry_date", { ascending: false }).limit(50);
-  if (error || !data) return demoJournals;
+  if (error || !data) return [];
   return data.map((row: GlEntryRow) => ({
     id: row.id,
     journalNo: row.journal_no,
@@ -379,7 +379,7 @@ export async function getApprovals(): Promise<ApprovalRow[]> {
   if (!isSupabaseConfigured()) return demoApprovals;
   const supabase = await getServerClient();
   const { data, error } = await supabase.from("payment_orders").select("*").eq("status", "pending").order("created_at", { ascending: false }).limit(50);
-  if (error || !data) return demoApprovals;
+  if (error || !data) return [];
   return data.map((row: PaymentOrderRow) => ({
     id: row.id,
     orderNo: row.order_no,
@@ -398,7 +398,7 @@ export async function getProducts(): Promise<ProductRow[]> {
   if (!isSupabaseConfigured()) return demoProducts;
   const supabase = await getServerClient();
   const { data, error } = await supabase.from("products").select("*").order("code");
-  if (error || !data) return demoProducts;
+  if (error || !data) return [];
   return data.map((row: ProductRowInput) => ({
     id: row.id,
     code: row.code,
@@ -415,7 +415,7 @@ export async function getStaff(): Promise<StaffRow[]> {
   if (!isSupabaseConfigured()) return demoStaff;
   const supabase = await getServerClient();
   const { data, error } = await supabase.from("profiles").select("id, first_name, last_name, role").in("role", ["staff_teller", "staff_operations", "staff_compliance", "staff_accountant", "staff_admin", "super_admin"]);
-  if (error || !data) return demoStaff;
+  if (error || !data) return [];
   return data.map((row: ProfileRow) => ({
     id: row.id,
     name: [row.first_name, row.last_name].filter(Boolean).join(" ") || "Unknown",
@@ -430,7 +430,7 @@ export async function getAuditLog(): Promise<AuditRow[]> {
   if (!isSupabaseConfigured()) return demoAudit;
   const supabase = await getServerClient();
   const { data, error } = await supabase.from("operation_logs").select("*").order("created_at", { ascending: false }).limit(100);
-  if (error || !data) return demoAudit;
+  if (error || !data) return [];
   return data.map((row: OperationLogRow) => ({
     id: row.id,
     actor: row.actor_id ?? "system",
