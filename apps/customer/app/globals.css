@@ -1,2 +1,7 @@
 @import "tailwindcss";
 @import "@capitech/ui/theme.css";
+
+/* Scan the shared UI package + this app so Tailwind generates every utility
+   used by components (dropdowns, selects, navbars, etc.). */
+@source "../../../packages/ui/src";
+@source "../../../packages/lib/src";
