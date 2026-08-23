@@ -15,6 +15,9 @@ import {
   ScrollText,
   ShieldCheck,
   KeyRound,
+  BarChart3,
+  Webhook,
+  MessagesSquare,
   Menu,
   X,
 } from "lucide-react";
@@ -26,9 +29,12 @@ const NAV_ITEMS = [
   { href: "/customers", label: "Customers", icon: Users },
   { href: "/accounts", label: "Accounts", icon: Wallet },
   { href: "/ledger", label: "General Ledger", icon: BookOpenText },
+  { href: "/reports", label: "Reports", icon: BarChart3 },
   { href: "/payments", label: "Payment Approvals", icon: ArrowLeftRight, badge: "3" },
   { href: "/products", label: "Products", icon: Package },
   { href: "/open-api", label: "Open API", icon: KeyRound },
+  { href: "/webhooks", label: "Webhooks", icon: Webhook },
+  { href: "/contact", label: "Contact", icon: MessagesSquare },
 ];
 
 const BOTTOM_ITEMS = [

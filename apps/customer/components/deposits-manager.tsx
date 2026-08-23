@@ -12,6 +12,26 @@ import type { DepositVM } from "@/lib/data";
 
 const TERMS = [7, 30, 90, 180, 365];
 
+/** Simple interest accrued since start: principal * rate(%) * days / 365. */
+function computeAccruedInterest(dep: DepositVM): number {
+  const principal = Number(dep.principal) || 0;
+  const rate = Number(dep.interestRate) || 0;
+  const [y, m, d] = dep.startDate.split("-").map(Number);
+  const start = new Date(y, m - 1, d);
+  const now = new Date();
+  const days = Math.max(0, Math.floor((now.getTime() - start.getTime()) / 86_400_000));
+  return (principal * rate * days) / 36500;
+}
+
+/** Whole days between today and the (date-only) maturity date. */
+function daysUntilMaturity(dateStr: string): number {
+  const [y, m, d] = dateStr.split("-").map(Number);
+  const target = new Date(y, m - 1, d);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return Math.round((target.getTime() - today.getTime()) / 86_400_000);
+}
+
 function OpenDepositDialog({ accountId }: { accountId: string }) {
   const [open, setOpen] = useState(false);
   const [principal, setPrincipal] = useState("");
@@ -133,31 +153,52 @@ export function DepositsManager({ deposits, accountId }: { deposits: DepositVM[]
         </Card>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2">
-          {deposits.map((dep) => (
-            <Card key={dep.id} className={cn(dep.status === "matured" && "opacity-70")}>
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  {formatMoney(dep.principal, dep.currency)}
-                  <Badge variant={dep.status === "active" ? "success" : dep.status === "matured" ? "info" : "neutral"}>
-                    {dep.status}
-                  </Badge>
-                </CardTitle>
-                <CardDescription>
-                  {formatPercent(dep.interestRate)} p.a. · {dep.termDays} days
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="grid grid-cols-2 gap-3 text-sm">
-                <div className="rounded-lg bg-muted px-3 py-2">
-                  <p className="text-xs text-muted-foreground">Matures</p>
-                  <p className="font-semibold text-navy-100">{formatDate(dep.maturityDate)}</p>
-                </div>
-                <div className="rounded-lg bg-muted px-3 py-2">
-                  <p className="text-xs text-muted-foreground">Accrued interest</p>
-                  <p className="font-semibold text-emerald-400">{formatMoney(dep.interestAccrued, dep.currency)}</p>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+          {deposits.map((dep) => {
+            // Prefer the stored daily accrual figure (interest_accrued); fall back
+            // to client-side simple interest when the cron job hasn't run yet (0).
+            const storedAccrued = Number(dep.interestAccrued) || 0;
+            const accrued = storedAccrued > 0 ? storedAccrued : computeAccruedInterest(dep);
+            const daysLeft = daysUntilMaturity(dep.maturityDate);
+            const isActive = dep.status === "active";
+            const settled = dep.status === "matured" || dep.status === "closed";
+            return (
+              <Card key={dep.id} className={cn(settled && "opacity-70")}>
+                <CardHeader>
+                  <CardTitle className="flex items-center justify-between">
+                    {formatMoney(dep.principal, dep.currency)}
+                    <span className="flex items-center gap-2">
+                      {isActive && (
+                        <Badge variant={daysLeft <= 7 ? "warning" : "info"}>
+                          {daysLeft <= 0 ? "Matures today" : `${daysLeft} day${daysLeft === 1 ? "" : "s"} left`}
+                        </Badge>
+                      )}
+                      <Badge variant={isActive ? "success" : dep.status === "matured" ? "info" : "neutral"}>
+                        {dep.status}
+                      </Badge>
+                    </span>
+                  </CardTitle>
+                  <CardDescription>
+                    {formatPercent(dep.interestRate)} p.a. · {dep.termDays} days · started {formatDate(dep.startDate)}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="grid grid-cols-2 gap-3 text-sm">
+                  <div className="rounded-lg bg-muted px-3 py-2">
+                    <p className="text-xs text-muted-foreground">Matures on</p>
+                    <p className="font-semibold text-navy-100">{formatDate(dep.maturityDate)}</p>
+                  </div>
+                  <div className="rounded-lg bg-muted px-3 py-2">
+                    <p className="text-xs text-muted-foreground">Accrued interest</p>
+                    <p className="font-semibold text-emerald-400">{formatMoney(accrued, dep.currency)}</p>
+                  </div>
+                </CardContent>
+                {dep.rollover && isActive && (
+                  <div className="px-6 pb-4">
+                    <p className="text-xs text-muted-foreground">Auto-renews at maturity</p>
+                  </div>
+                )}
+              </Card>
+            );
+          })}
         </div>
       )}
     </div>

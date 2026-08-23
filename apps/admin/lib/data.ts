@@ -104,6 +104,73 @@ export interface AuditRow {
   createdAt: string;
 }
 
+/** A single report line — one COA account in one currency. */
+export interface ReportLine {
+  code: string;
+  name: string;
+  currency: string;
+  /** Display value (normalised so credit-normal categories show positive). */
+  balance: number;
+}
+
+/** A grouped report section (e.g. Assets) with per-currency totals. */
+export interface ReportSection {
+  category: string;
+  label: string;
+  lines: ReportLine[];
+  totals: Record<string, number>;
+}
+
+export interface BalanceSheetData {
+  assets: ReportSection;
+  liabilities: ReportSection;
+  equity: ReportSection;
+  totalsByCurrency: Record<string, { assets: number; liabilities: number; equity: number }>;
+  balanced: boolean;
+  hasBalances: boolean;
+}
+
+export interface ProfitAndLossData {
+  income: ReportSection;
+  expenses: ReportSection;
+  totalsByCurrency: Record<string, { income: number; expenses: number; net: number }>;
+}
+
+export interface WebhookEndpointRow {
+  id: string;
+  url: string;
+  events: string[];
+  active: boolean;
+  createdAt: string;
+}
+
+export interface WebhookEventRow {
+  id: string;
+  endpointId: string | null;
+  eventType: string;
+  status: "pending" | "delivered" | "failed";
+  attempts: number;
+  createdAt: string;
+}
+
+export interface ApiUsageRow {
+  id: string;
+  endpoint: string;
+  method: string;
+  statusCode: number | null;
+  latencyMs: number | null;
+  createdAt: string;
+}
+
+export interface KycDocumentRow {
+  id: string;
+  customerId: string;
+  documentType: string;
+  filePath: string;
+  status: string;
+  createdAt: string;
+}
+
 /* ============================================================
    Demo data
    ============================================================ */
@@ -186,6 +253,27 @@ const demoAudit: AuditRow[] = [
   { id: "au-2", actor: "David Chen", action: "payment.approve", entity: "payment_orders", entityId: "PAY-20260815-0010", details: "Approved internal transfer $120.00", ip: "10.0.4.7", createdAt: new Date(Date.now() - 1000 * 60 * 60 * 5).toISOString() },
   { id: "au-3", actor: "Sarah Mitchell", action: "account.freeze", entity: "accounts", entityId: "9911002244", details: "Froze account per compliance hold", ip: "10.0.4.3", createdAt: new Date(Date.now() - 1000 * 60 * 60 * 26).toISOString() },
   { id: "au-4", actor: "Tom Becker", action: "ledger.adjust", entity: "gl_entries", entityId: "GL-20260814-021", details: "Posted interest accrual batch", ip: "10.0.4.19", createdAt: new Date(Date.now() - 1000 * 60 * 60 * 30).toISOString() },
+];
+
+const demoWebhookEndpoints: WebhookEndpointRow[] = [
+  { id: "wh-1", url: "https://acme.example.com/hooks/payments", events: ["payment.completed", "payment.failed"], active: true, createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString() },
+  { id: "wh-2", url: "https://treasury.acme.example.com/hooks/settlements", events: ["ledger.posted"], active: true, createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString() },
+  { id: "wh-3", url: "https://sandbox.acme.example.com/hooks", events: ["*"], active: false, createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 9).toISOString() },
+];
+
+const demoWebhookEvents: WebhookEventRow[] = [
+  { id: "we-1", endpointId: "wh-1", eventType: "payment.completed", status: "delivered", attempts: 1, createdAt: new Date(Date.now() - 1000 * 60 * 22).toISOString() },
+  { id: "we-2", endpointId: "wh-1", eventType: "payment.failed", status: "failed", attempts: 3, createdAt: new Date(Date.now() - 1000 * 60 * 90).toISOString() },
+  { id: "we-3", endpointId: "wh-2", eventType: "ledger.posted", status: "delivered", attempts: 1, createdAt: new Date(Date.now() - 1000 * 60 * 60 * 5).toISOString() },
+  { id: "we-4", endpointId: "wh-1", eventType: "payment.completed", status: "pending", attempts: 0, createdAt: new Date(Date.now() - 1000 * 60 * 2).toISOString() },
+];
+
+const demoApiUsage: ApiUsageRow[] = [
+  { id: "u-1", endpoint: "/v1/accounts", method: "GET", statusCode: 200, latencyMs: 42, createdAt: new Date(Date.now() - 1000 * 60 * 3).toISOString() },
+  { id: "u-2", endpoint: "/v1/transfers", method: "POST", statusCode: 201, latencyMs: 118, createdAt: new Date(Date.now() - 1000 * 60 * 12).toISOString() },
+  { id: "u-3", endpoint: "/v1/transfers/PAY-20260815-0012", method: "GET", statusCode: 200, latencyMs: 31, createdAt: new Date(Date.now() - 1000 * 60 * 25).toISOString() },
+  { id: "u-4", endpoint: "/v1/transfers", method: "POST", statusCode: 429, latencyMs: 14, createdAt: new Date(Date.now() - 1000 * 60 * 40).toISOString() },
+  { id: "u-5", endpoint: "/v1/accounts/1002345678", method: "GET", statusCode: 401, latencyMs: 9, createdAt: new Date(Date.now() - 1000 * 60 * 60).toISOString() },
 ];
 
 /* ============================================================
@@ -280,6 +368,57 @@ interface OperationLogRow {
   entity_id: string;
   details: string;
   ip_address: string;
+  created_at: string;
+}
+
+interface CoaAccountRowInput {
+  id: string;
+  code: string;
+  name: string;
+  category: string;
+  currency: string | null;
+  active: boolean;
+}
+
+interface BalanceRowInput {
+  coa_account_id: string;
+  currency: string;
+  ledger_balance: string;
+}
+
+interface WebhookEndpointRowInput {
+  id: string;
+  url: string;
+  events: string[];
+  active: boolean;
+  created_at: string;
+}
+
+interface WebhookEventRowInput {
+  id: string;
+  endpoint_id: string | null;
+  event_type: string;
+  status: "pending" | "delivered" | "failed";
+  attempts: number;
+  created_at: string;
+}
+
+interface ApiUsageRowInput {
+  id: string;
+  endpoint: string;
+  method: string;
+  status_code: number | null;
+  latency_ms: number | null;
+  created_at: string;
+}
+
+interface KycDocumentRowInput {
+  id: string;
+  customer_id: string | null;
+  organization_id: string | null;
+  document_type: string;
+  file_path: string;
+  status: string;
   created_at: string;
 }
 
@@ -441,4 +580,272 @@ export async function getAuditLog(): Promise<AuditRow[]> {
     ip: row.ip_address ?? "",
     createdAt: row.created_at,
   }));
+}
+
+/* ============================================================
+   Financial reports (balance sheet & profit & loss)
+   ============================================================ */
+
+const CREDIT_NORMAL_CATEGORIES = new Set(["liability", "equity", "income"]);
+
+function buildReportSection(
+  category: string,
+  label: string,
+  coaRows: CoaAccountRowInput[],
+  balancesByAccount: Map<string, { currency: string; ledgerBalance: number }[]>
+): ReportSection {
+  const lines: ReportLine[] = [];
+  const totals: Record<string, number> = {};
+  for (const coa of coaRows) {
+    if (coa.category !== category) continue;
+    const balances = balancesByAccount.get(coa.id);
+    if (balances && balances.length > 0) {
+      for (const b of balances) {
+        const display = CREDIT_NORMAL_CATEGORIES.has(category) ? -b.ledgerBalance : b.ledgerBalance;
+        lines.push({ code: coa.code, name: coa.name, currency: b.currency, balance: display });
+        totals[b.currency] = (totals[b.currency] ?? 0) + display;
+      }
+    } else {
+      const currency = coa.currency ?? "USD";
+      lines.push({ code: coa.code, name: coa.name, currency, balance: 0 });
+    }
+  }
+  return { category, label, lines, totals };
+}
+
+function buildDemoReportSection(category: string, label: string): ReportSection {
+  const lines: ReportLine[] = [];
+  const totals: Record<string, number> = {};
+  for (const row of demoCoa) {
+    if (row.category !== category) continue;
+    const raw = Number(row.balance);
+    const display = CREDIT_NORMAL_CATEGORIES.has(category) ? -raw : raw;
+    lines.push({ code: row.code, name: row.name, currency: row.currency, balance: display });
+    totals[row.currency] = (totals[row.currency] ?? 0) + display;
+  }
+  return { category, label, lines, totals };
+}
+
+function computeBalanceSheetTotals(assets: ReportSection, liabilities: ReportSection, equity: ReportSection) {
+  const currencies = new Set<string>([
+    ...Object.keys(assets.totals),
+    ...Object.keys(liabilities.totals),
+    ...Object.keys(equity.totals),
+  ]);
+  const totalsByCurrency: Record<string, { assets: number; liabilities: number; equity: number }> = {};
+  let balanced = true;
+  let hasBalances = false;
+  for (const currency of currencies) {
+    const a = assets.totals[currency] ?? 0;
+    const l = liabilities.totals[currency] ?? 0;
+    const e = equity.totals[currency] ?? 0;
+    if (a !== 0 || l !== 0 || e !== 0) hasBalances = true;
+    totalsByCurrency[currency] = { assets: a, liabilities: l, equity: e };
+    if (Math.abs(a - (l + e)) > 0.005) balanced = false;
+  }
+  return { totalsByCurrency, balanced, hasBalances };
+}
+
+export async function getBalanceSheet(): Promise<BalanceSheetData> {
+  if (!isSupabaseConfigured()) {
+    const assets = buildDemoReportSection("asset", "Assets");
+    const liabilities = buildDemoReportSection("liability", "Liabilities");
+    const equity = buildDemoReportSection("equity", "Equity");
+    return { assets, liabilities, equity, ...computeBalanceSheetTotals(assets, liabilities, equity) };
+  }
+  const supabase = await getServerClient();
+  const [coaRes, balRes] = await Promise.all([
+    supabase.from("coa_accounts").select("*").eq("active", true).order("code"),
+    supabase.from("balances").select("coa_account_id, currency, ledger_balance"),
+  ]);
+  const coaRows = (coaRes.data ?? []) as CoaAccountRowInput[];
+  const balancesByAccount = new Map<string, { currency: string; ledgerBalance: number }[]>();
+  for (const row of (balRes.data ?? []) as BalanceRowInput[]) {
+    const list = balancesByAccount.get(row.coa_account_id) ?? [];
+    list.push({ currency: row.currency, ledgerBalance: Number(row.ledger_balance) });
+    balancesByAccount.set(row.coa_account_id, list);
+  }
+  const assets = buildReportSection("asset", "Assets", coaRows, balancesByAccount);
+  const liabilities = buildReportSection("liability", "Liabilities", coaRows, balancesByAccount);
+  const equity = buildReportSection("equity", "Equity", coaRows, balancesByAccount);
+  return { assets, liabilities, equity, ...computeBalanceSheetTotals(assets, liabilities, equity) };
+}
+
+function computeProfitAndLossTotals(income: ReportSection, expenses: ReportSection) {
+  const currencies = new Set<string>([...Object.keys(income.totals), ...Object.keys(expenses.totals)]);
+  const totalsByCurrency: Record<string, { income: number; expenses: number; net: number }> = {};
+  for (const currency of currencies) {
+    const inc = income.totals[currency] ?? 0;
+    const exp = expenses.totals[currency] ?? 0;
+    totalsByCurrency[currency] = { income: inc, expenses: exp, net: inc - exp };
+  }
+  return totalsByCurrency;
+}
+
+export async function getProfitAndLoss(): Promise<ProfitAndLossData> {
+  if (!isSupabaseConfigured()) {
+    const income = buildDemoReportSection("income", "Income");
+    const expenses = buildDemoReportSection("expense", "Expenses");
+    return { income, expenses, totalsByCurrency: computeProfitAndLossTotals(income, expenses) };
+  }
+  const supabase = await getServerClient();
+  const [coaRes, balRes] = await Promise.all([
+    supabase.from("coa_accounts").select("*").eq("active", true).order("code"),
+    supabase.from("balances").select("coa_account_id, currency, ledger_balance"),
+  ]);
+  const coaRows = (coaRes.data ?? []) as CoaAccountRowInput[];
+  const balancesByAccount = new Map<string, { currency: string; ledgerBalance: number }[]>();
+  for (const row of (balRes.data ?? []) as BalanceRowInput[]) {
+    const list = balancesByAccount.get(row.coa_account_id) ?? [];
+    list.push({ currency: row.currency, ledgerBalance: Number(row.ledger_balance) });
+    balancesByAccount.set(row.coa_account_id, list);
+  }
+  const income = buildReportSection("income", "Income", coaRows, balancesByAccount);
+  const expenses = buildReportSection("expense", "Expenses", coaRows, balancesByAccount);
+  return { income, expenses, totalsByCurrency: computeProfitAndLossTotals(income, expenses) };
+}
+
+/* ============================================================
+   Webhooks & API usage
+   ============================================================ */
+
+export async function getWebhookEndpoints(): Promise<WebhookEndpointRow[]> {
+  if (!isSupabaseConfigured()) return demoWebhookEndpoints;
+  const supabase = await getServerClient();
+  const { data, error } = await supabase.from("webhook_endpoints").select("*").order("created_at", { ascending: false });
+  if (error || !data) return [];
+  return data.map((row: WebhookEndpointRowInput) => ({
+    id: row.id,
+    url: row.url,
+    events: row.events ?? [],
+    active: row.active,
+    createdAt: row.created_at,
+  }));
+}
+
+export async function getWebhookEvents(): Promise<WebhookEventRow[]> {
+  if (!isSupabaseConfigured()) return demoWebhookEvents;
+  const supabase = await getServerClient();
+  const { data, error } = await supabase.from("webhook_events").select("*").order("created_at", { ascending: false }).limit(50);
+  if (error || !data) return [];
+  return data.map((row: WebhookEventRowInput) => ({
+    id: row.id,
+    endpointId: row.endpoint_id,
+    eventType: row.event_type,
+    status: row.status,
+    attempts: row.attempts,
+    createdAt: row.created_at,
+  }));
+}
+
+export async function getApiUsage(): Promise<ApiUsageRow[]> {
+  if (!isSupabaseConfigured()) return demoApiUsage;
+  const supabase = await getServerClient();
+  const { data, error } = await supabase.from("api_usage_logs").select("*").order("created_at", { ascending: false }).limit(20);
+  if (error || !data) return [];
+  return data.map((row: ApiUsageRowInput) => ({
+    id: row.id,
+    endpoint: row.endpoint,
+    method: row.method,
+    statusCode: row.status_code,
+    latencyMs: row.latency_ms,
+    createdAt: row.created_at,
+  }));
+}
+
+/* ============================================================
+   Contact messages (C11)
+   ============================================================ */
+
+export interface ContactMessageRow {
+  id: string;
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+  status: "new" | "responded" | "closed";
+  createdAt: string;
+}
+
+const demoContactMessages: ContactMessageRow[] = [
+  {
+    id: "cm-1",
+    name: "Aisha Khan",
+    email: "aisha@example.com",
+    subject: "Corporate onboarding",
+    message: "How long does corporate onboarding take for an LLC in the UAE? We need to move money this month.",
+    status: "new",
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 3).toISOString(),
+  },
+  {
+    id: "cm-2",
+    name: "Marco Rossi",
+    email: "marco@example.com",
+    subject: "Virtual card limit",
+    message: "Could you raise my daily virtual card limit for a one-off purchase this weekend?",
+    status: "responded",
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 26).toISOString(),
+  },
+  {
+    id: "cm-3",
+    name: "Oluwatobi Adeyemi",
+    email: "tobi@example.com",
+    subject: "Open API sandbox",
+    message: "How do I get scoped API keys for the sandbox environment? The docs mention webhooks but I can't find the keys page.",
+    status: "closed",
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(),
+  },
+];
+
+interface ContactMessageRowInput {
+  id: string;
+  name: string;
+  email: string;
+  subject: string | null;
+  message: string;
+  status: string;
+  created_at: string;
+}
+
+export async function getContactMessages(): Promise<ContactMessageRow[]> {
+  if (!isSupabaseConfigured()) return demoContactMessages;
+  const supabase = await getServerClient();
+  const { data, error } = await supabase
+    .from("contact_messages")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(200);
+  if (error || !data) return [];
+  return data.map((row: ContactMessageRowInput) => ({
+    id: row.id,
+    name: row.name,
+    email: row.email,
+    subject: row.subject ?? "",
+    message: row.message,
+    status: row.status as ContactMessageRow["status"],
+    createdAt: row.created_at,
+  }));
+}
+
+/** KYC documents grouped by customer id (staff may read via RLS). */
+export async function getKycDocuments(customerIds: string[]): Promise<Record<string, KycDocumentRow[]>> {
+  if (!isSupabaseConfigured() || customerIds.length === 0) return {};
+  const supabase = await getServerClient();
+  const { data, error } = await supabase.from("kyc_documents").select("*").in("customer_id", customerIds);
+  if (error || !data) return {};
+  const grouped: Record<string, KycDocumentRow[]> = {};
+  for (const row of data as KycDocumentRowInput[]) {
+    if (!row.customer_id) continue;
+    const list = grouped[row.customer_id] ?? [];
+    list.push({
+      id: row.id,
+      customerId: row.customer_id,
+      documentType: row.document_type,
+      filePath: row.file_path,
+      status: row.status,
+      createdAt: row.created_at,
+    });
+    grouped[row.customer_id] = list;
+  }
+  return grouped;
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { KeyRound, Mail, Phone, ShieldCheck, Smartphone, User, Fingerprint } from "lucide-react";
+import { Bell, KeyRound, Mail, Phone, ShieldCheck, Smartphone, User, Fingerprint } from "lucide-react";
 import { Alert, AlertDescription, Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input, Label, Switch } from "@capitech/ui";
 import { toast } from "@capitech/ui";
 import { getBrowserClient, isSupabaseConfigured } from "@/lib/supabase-browser";
@@ -12,12 +12,32 @@ interface ProfileData {
   last_name: string | null;
   phone: string | null;
   email_notifications: boolean;
+  tenant_id?: string | null;
 }
+
+interface NotificationPrefs {
+  email_transactional: boolean;
+  email_security: boolean;
+  email_marketing: boolean;
+  in_app: boolean;
+}
+
+const DEFAULT_PREFS: NotificationPrefs = {
+  email_transactional: true,
+  email_security: true,
+  email_marketing: false,
+  in_app: true,
+};
 
 export default function ProfilePage() {
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(true);
+
+  // Notification preferences
+  const [prefs, setPrefs] = useState<NotificationPrefs>(DEFAULT_PREFS);
+  const [tenantId, setTenantId] = useState<string | null>(null);
+  const [prefsSaving, setPrefsSaving] = useState(false);
 
   // MFA state
   const [mfaEnabled, setMfaEnabled] = useState(false);
@@ -46,8 +66,14 @@ export default function ProfilePage() {
       const { data: userData } = await supabase.auth.getUser();
       const user = userData.user;
       if (user) setEmail(user.email ?? "");
-      const { data: profileData } = await supabase.from("profiles").select("first_name, last_name, phone, email_notifications").maybeSingle();
-      if (profileData) setProfile(profileData as ProfileData);
+      const { data: profileData } = await supabase.from("profiles").select("first_name, last_name, phone, email_notifications, tenant_id").maybeSingle();
+      if (profileData) {
+        setProfile(profileData as ProfileData);
+        setTenantId((profileData as ProfileData).tenant_id ?? null);
+      }
+      // Notification preferences — fall back to defaults when no row exists yet.
+      const { data: prefsData } = await supabase.from("notification_prefs").select("email_transactional, email_security, email_marketing, in_app").maybeSingle();
+      if (prefsData) setPrefs({ ...DEFAULT_PREFS, ...(prefsData as Partial<NotificationPrefs>) });
       const { data: factorsData } = await supabase.auth.mfa.listFactors();
       setMfaEnabled((factorsData?.totp.length ?? 0) > 0);
       const { data: customerData } = await supabase.from("customers").select("kyc_status, kyc_level").maybeSingle();
@@ -78,6 +104,52 @@ export default function ProfilePage() {
       await new Promise((r) => setTimeout(r, 500));
       toast.success("Profile updated (demo mode)");
     }
+  }
+
+  async function updatePrefs(patch: Partial<NotificationPrefs>) {
+    const next = { ...prefs, ...patch };
+    setPrefs(next);
+    setPrefsSaving(true);
+    if (!isSupabaseConfigured()) {
+      await new Promise((r) => setTimeout(r, 300));
+      setPrefsSaving(false);
+      toast.success("Notification preferences saved (demo mode)");
+      return;
+    }
+    const supabase = getBrowserClient();
+    const { data: userData } = await supabase.auth.getUser();
+    const userId = userData.user?.id;
+    if (!userId) {
+      setPrefs(next);
+      setPrefsSaving(false);
+      toast.error("Unable to identify your account");
+      return;
+    }
+    // tenant_id is required — resolve it from the profile if not already cached.
+    let tid = tenantId;
+    if (!tid) {
+      const { data: prof } = await supabase.from("profiles").select("tenant_id").eq("id", userId).maybeSingle();
+      tid = (prof?.tenant_id as string | null) ?? null;
+      if (tid) setTenantId(tid);
+    }
+    const payload: Record<string, unknown> = {
+      profile_id: userId,
+      email_transactional: next.email_transactional,
+      email_security: next.email_security,
+      email_marketing: next.email_marketing,
+      in_app: next.in_app,
+    };
+    if (tid) payload.tenant_id = tid;
+    const { error } = await supabase.from("notification_prefs").upsert(payload, { onConflict: "profile_id" });
+    if (error) {
+      setPrefs(prefs);
+      setPrefsSaving(false);
+      toast.error(error.message);
+      return;
+    }
+    setPrefsSaving(false);
+    toast.success("Notification preferences saved");
+    window.location.reload();
   }
 
   async function enrollMfa() {
@@ -194,6 +266,46 @@ export default function ProfilePage() {
             />
           </div>
           <Button onClick={saveProfile}>Save changes</Button>
+        </CardContent>
+      </Card>
+
+      {/* Notification preferences */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Bell className="size-4 text-brand-400" /> Notification preferences
+          </CardTitle>
+          <CardDescription>Choose how you hear from us — per email category and in-app.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="flex items-center justify-between gap-3 rounded-lg bg-muted px-4 py-3">
+            <div className="min-w-0">
+              <p className="text-sm font-medium text-navy-100">In-app notifications</p>
+              <p className="text-xs text-muted-foreground">Alerts inside your dashboard.</p>
+            </div>
+            <Switch checked={prefs.in_app} disabled={prefsSaving} onCheckedChange={(v) => updatePrefs({ in_app: v })} />
+          </div>
+          <div className="flex items-center justify-between gap-3 rounded-lg bg-muted px-4 py-3">
+            <div className="min-w-0">
+              <p className="text-sm font-medium text-navy-100">Email — Transactional</p>
+              <p className="text-xs text-muted-foreground">Transfers, deposits and card activity.</p>
+            </div>
+            <Switch checked={prefs.email_transactional} disabled={prefsSaving} onCheckedChange={(v) => updatePrefs({ email_transactional: v })} />
+          </div>
+          <div className="flex items-center justify-between gap-3 rounded-lg bg-muted px-4 py-3">
+            <div className="min-w-0">
+              <p className="text-sm font-medium text-navy-100">Email — Security</p>
+              <p className="text-xs text-muted-foreground">Login alerts, MFA and KYC updates.</p>
+            </div>
+            <Switch checked={prefs.email_security} disabled={prefsSaving} onCheckedChange={(v) => updatePrefs({ email_security: v })} />
+          </div>
+          <div className="flex items-center justify-between gap-3 rounded-lg bg-muted px-4 py-3">
+            <div className="min-w-0">
+              <p className="text-sm font-medium text-navy-100">Email — Marketing & news</p>
+              <p className="text-xs text-muted-foreground">Product updates, offers and bank news.</p>
+            </div>
+            <Switch checked={prefs.email_marketing} disabled={prefsSaving} onCheckedChange={(v) => updatePrefs({ email_marketing: v })} />
+          </div>
         </CardContent>
       </Card>
 

@@ -9,7 +9,8 @@ export default async function TransfersPage() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-white">Transfers</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Internal transfers settle instantly. External payments are sandbox-simulated.
+          Internal transfers settle instantly. External (SWIFT/SEPA) transfers are sandbox-simulated with a
+          1.5% fee (min 15, max 50).
         </p>
       </div>
       <TransferForm accounts={accounts} />

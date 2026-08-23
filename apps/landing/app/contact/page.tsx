@@ -5,16 +5,55 @@ import Link from "next/link";
 import { ArrowRight, Send } from "lucide-react";
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input, Label, Logo, Textarea } from "@capitech/ui";
 import { SUPPORT_EMAIL } from "@capitech/lib";
+import { getSupabaseBrowserClient } from "@/lib/auth";
+
+type SubmitState = "idle" | "sending" | "sent";
 
 export default function ContactPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
-  const [sent, setSent] = useState(false);
+  const [submitState, setSubmitState] = useState<SubmitState>("idle");
+  const [notice, setNotice] = useState<string | null>(null);
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setSent(true);
+    setSubmitState("sending");
+
+    // The browser client inlines NEXT_PUBLIC_* vars at build time.
+    const configured = Boolean(
+      process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    );
+
+    let saved = false;
+    if (configured) {
+      try {
+        const supabase = getSupabaseBrowserClient();
+        const { error } = await supabase.from("contact_messages").insert({
+          name,
+          email,
+          subject: subject.trim() || null,
+          message,
+          status: "new",
+        });
+        saved = !error;
+        if (error) {
+          console.error("Contact form: insert failed", error.message);
+        }
+      } catch (err) {
+        console.error("Contact form: insert threw", err);
+      }
+    }
+
+    if (!saved) {
+      // Graceful fallback: never pretend the message was captured when it
+      // wasn't. Show success anyway, but tell the visitor how to reach us.
+      setNotice(
+        `We couldn't save your message to our system just now — if you don't hear back from us, please email ${SUPPORT_EMAIL} directly.`
+      );
+    }
+    setSubmitState("sent");
   }
 
   return (
@@ -55,15 +94,20 @@ export default function ContactPage() {
               <CardDescription className="text-navy-300">We will get back to you as soon as possible.</CardDescription>
             </CardHeader>
             <CardContent>
-              {sent ? (
+              {submitState === "sent" ? (
                 <div className="py-8 text-center">
                   <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-400">
                     <Send className="size-5" />
                   </div>
                   <h2 className="mt-4 text-lg font-semibold text-white">Message sent</h2>
                   <p className="mt-2 text-sm text-navy-300">
-                    Thanks, {name || "friend"}! We will reply to {email} shortly.
+                    Thanks, {name || "friend"}! We will reply to {email} within one business day.
                   </p>
+                  {notice && (
+                    <p className="mt-4 rounded-lg border border-amber-400/20 bg-amber-400/10 px-4 py-3 text-xs leading-relaxed text-amber-200">
+                      {notice}
+                    </p>
+                  )}
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-4">
@@ -76,11 +120,15 @@ export default function ContactPage() {
                     <Input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@company.com" className="border-white/10 bg-white/5 text-white placeholder:text-navy-500" />
                   </div>
                   <div className="space-y-2">
+                    <Label htmlFor="subject" className="text-navy-100">Subject <span className="font-normal text-navy-500">(optional)</span></Label>
+                    <Input id="subject" value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="Account opening, cards, API access…" className="border-white/10 bg-white/5 text-white placeholder:text-navy-500" />
+                  </div>
+                  <div className="space-y-2">
                     <Label htmlFor="message" className="text-navy-100">Message</Label>
                     <Textarea id="message" required rows={5} value={message} onChange={(e) => setMessage(e.target.value)} placeholder="How can we help?" className="border-white/10 bg-white/5 text-white placeholder:text-navy-500" />
                   </div>
-                  <Button type="submit" size="lg" className="w-full bg-brand-600 text-white shadow-sm hover:bg-brand-500">
-                    Send message
+                  <Button type="submit" size="lg" disabled={submitState === "sending"} className="w-full bg-brand-600 text-white shadow-sm hover:bg-brand-500 disabled:opacity-70">
+                    {submitState === "sending" ? "Sending…" : "Send message"}
                     <ArrowRight className="size-4" />
                   </Button>
                 </form>

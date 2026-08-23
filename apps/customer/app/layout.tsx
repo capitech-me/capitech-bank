@@ -14,6 +14,11 @@ export const metadata: Metadata = {
   title: { default: "Capitech Bank", template: "%s | Capitech Bank" },
   description: "Your digital bank — accounts, cards, transfers and deposits.",
   robots: { index: false, follow: false },
+  manifest: "/app/manifest.webmanifest",
+  icons: {
+    icon: "/app/icon.svg",
+    apple: "/app/favicon.ico",
+  },
 };
 
 export const viewport: Viewport = {

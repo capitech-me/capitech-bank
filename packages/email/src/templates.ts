@@ -188,6 +188,30 @@ export function securityEmail(opts: { firstName: string; event: string; date: st
   });
 }
 
+/* ------------------------------------------------ Corporate team invite */
+
+export function teamInviteEmail(opts: {
+  firstName: string;
+  orgName: string;
+  roleTitle: string;
+  inviterName?: string;
+}): string {
+  return emailLayout({
+    title: `You've been added to ${opts.orgName}`,
+    preheader: "Corporate banking team invitation.",
+    bodyHtml: `
+      <h1 style="margin:0 0 12px 0;font-size:22px;letter-spacing:-0.02em;">Welcome to the team 🏦</h1>
+      <p style="margin:0 0 16px 0;">Hi ${opts.firstName},</p>
+      <p style="margin:0 0 16px 0;">
+        You have been added to <strong>${opts.orgName}</strong> as <strong>${opts.roleTitle}</strong>${opts.inviterName ? ` by ${opts.inviterName}` : ""}.
+        Sign in to your Capitech Bank account to access your corporate banking dashboard.
+      </p>
+      ${ctaButton("https://online.capitech.me/app", "Open your dashboard")}
+      <p style="margin:0;color:#64748b;font-size:13px;">If you don't recognise this invitation, contact <a href="mailto:support@capitech.me" style="color:#2557eb;">support@capitech.me</a>.</p>
+    `,
+  });
+}
+
 /* ------------------------------------------------ Statements */
 
 export function statementReadyEmail(opts: {

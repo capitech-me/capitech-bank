@@ -34,6 +34,11 @@ export const metadata: Metadata = {
     description: "Multi-currency accounts, virtual cards, term deposits, crypto and open APIs.",
   },
   robots: { index: true, follow: true },
+  manifest: "/manifest.webmanifest",
+  icons: {
+    icon: "/icon.svg",
+    apple: "/favicon.ico",
+  },
 };
 
 export const viewport: Viewport = {

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { CreditCard, Plus, Snowflake, Flame, Globe } from "lucide-react";
+import { useState, type ReactNode } from "react";
+import { CreditCard, Plus, Snowflake, Flame, Globe, Banknote, Nfc, Settings2 } from "lucide-react";
 import { Badge, Button, Card, CardContent, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Switch } from "@capitech/ui";
 import { formatMoney, formatCardExpiry } from "@capitech/lib";
 import { toast } from "@capitech/ui";
@@ -137,23 +137,110 @@ function CreateCardDialog({ accountId }: { accountId: string }) {
   );
 }
 
-export function CardsManager({ cards, defaultAccountId }: { cards: CardVM[]; defaultAccountId: string }) {
-  const [freezing, setFreezing] = useState<string | null>(null);
+/** A compact control row: label + icon on the left, Switch on the right. */
+function ToggleRow({ icon, label, checked, disabled, onCheckedChange }: {
+  icon: ReactNode;
+  label: string;
+  checked: boolean;
+  disabled?: boolean;
+  onCheckedChange: (checked: boolean) => void;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-2 rounded-lg bg-muted px-3 py-2">
+      <span className="flex min-w-0 items-center gap-2 text-sm text-navy-100">
+        <span className="shrink-0 text-muted-foreground">{icon}</span>
+        <span className="truncate">{label}</span>
+      </span>
+      <Switch checked={checked} disabled={disabled} onCheckedChange={onCheckedChange} className="shrink-0" />
+    </div>
+  );
+}
 
-  async function toggleFreeze(card: CardVM) {
-    setFreezing(card.id);
+function EditLimitsDialog({ card }: { card: CardVM }) {
+  const [open, setOpen] = useState(false);
+  const [daily, setDaily] = useState(card.dailyLimit ?? "");
+  const [monthly, setMonthly] = useState(card.monthlyLimit ?? "");
+  const [loading, setLoading] = useState(false);
+
+  async function handleSave() {
+    setLoading(true);
+    // Blank = no limit (NULL), numeric = new cap.
+    const patch: Record<string, unknown> = {
+      daily_limit: daily.trim() === "" ? null : Number(daily),
+      monthly_limit: monthly.trim() === "" ? null : Number(monthly),
+    };
     if (isSupabaseConfigured()) {
       const supabase = getBrowserClient();
-      const { error } = await supabase.from("cards").update({ frozen: !card.frozen }).eq("id", card.id);
-      if (error) toast.error(error.message);
-      else toast.success(card.frozen ? "Card unfrozen" : "Card frozen");
+      const { error } = await supabase.from("cards").update(patch).eq("id", card.id);
+      if (error) {
+        toast.error(error.message);
+        setLoading(false);
+        return;
+      }
+      toast.success("Card limits updated");
     } else {
       await new Promise((r) => setTimeout(r, 400));
-      toast.success(card.frozen ? "Card unfrozen" : "Card frozen");
+      toast.success("Card limits updated");
     }
-    setFreezing(null);
+    setLoading(false);
+    setOpen(false);
     window.location.reload();
   }
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm">
+          <Settings2 className="size-4" /> Edit limits
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Edit card limits</DialogTitle>
+          <DialogDescription>Set spending limits for card •••• {card.last4}. Leave a field blank for no limit.</DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4 py-2">
+          <div className="space-y-2">
+            <Label htmlFor={`daily-${card.id}`}>Daily limit</Label>
+            <Input id={`daily-${card.id}`} inputMode="decimal" value={daily} onChange={(e) => setDaily(e.target.value)} placeholder="2000.00" />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor={`monthly-${card.id}`}>Monthly limit</Label>
+            <Input id={`monthly-${card.id}`} inputMode="decimal" value={monthly} onChange={(e) => setMonthly(e.target.value)} placeholder="10000.00" />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+          <Button onClick={handleSave} disabled={loading}>{loading ? "Saving…" : "Save limits"}</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+export function CardsManager({ cards, defaultAccountId }: { cards: CardVM[]; defaultAccountId: string }) {
+  const [saving, setSaving] = useState<string | null>(null);
+
+  async function updateCard(card: CardVM, patch: Record<string, unknown>, successMsg: string) {
+    setSaving(card.id);
+    if (isSupabaseConfigured()) {
+      const supabase = getBrowserClient();
+      const { error } = await supabase.from("cards").update(patch).eq("id", card.id);
+      if (error) {
+        toast.error(error.message);
+        setSaving(null);
+        return;
+      }
+      toast.success(successMsg);
+    } else {
+      await new Promise((r) => setTimeout(r, 400));
+      toast.success(successMsg);
+    }
+    setSaving(null);
+    window.location.reload();
+  }
+
+  const busy = (card: CardVM) => saving === card.id;
 
   return (
     <div className="space-y-6">
@@ -180,34 +267,60 @@ export function CardsManager({ cards, defaultAccountId }: { cards: CardVM[]; def
               <CardContent className="space-y-4">
                 <CardVisual card={card} />
                 <div className="flex items-center justify-between">
-                  <Badge variant={card.frozen ? "warning" : "success"}>
-                    {card.frozen ? "Frozen" : "Active"}
+                  <Badge variant={card.frozen ? "warning" : card.status === "active" ? "success" : "neutral"}>
+                    {card.frozen ? "Frozen" : card.status === "pending" ? "Pending" : card.status === "expired" ? "Expired" : card.status === "closed" ? "Closed" : "Active"}
                   </Badge>
-                  <div className="flex items-center gap-3">
-                    <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                      <Globe className="size-3.5" /> Online
-                      <Switch checked={card.onlineEnabled} onCheckedChange={() => toast.info("Card controls update in Phase 2")} />
-                    </span>
-                    <Button
-                      variant={card.frozen ? "outline" : "secondary"}
-                      size="sm"
-                      onClick={() => toggleFreeze(card)}
-                      disabled={freezing === card.id}
-                    >
-                      {card.frozen ? <Flame className="size-4" /> : <Snowflake className="size-4" />}
-                      {card.frozen ? "Unfreeze" : "Freeze"}
-                    </Button>
-                  </div>
+                  <Button
+                    variant={card.frozen ? "outline" : "secondary"}
+                    size="sm"
+                    onClick={() => updateCard(card, { frozen: !card.frozen }, card.frozen ? "Card unfrozen" : "Card frozen")}
+                    disabled={busy(card)}
+                  >
+                    {card.frozen ? <Flame className="size-4" /> : <Snowflake className="size-4" />}
+                    {card.frozen ? "Unfreeze" : "Freeze"}
+                  </Button>
                 </div>
+
+                {/* Spending controls */}
+                <div className="grid gap-2 sm:grid-cols-3">
+                  <ToggleRow
+                    icon={<Globe className="size-4" />}
+                    label="Online payments"
+                    checked={card.onlineEnabled}
+                    disabled={busy(card)}
+                    onCheckedChange={(v) => updateCard(card, { online_enabled: v }, v ? "Online payments enabled" : "Online payments disabled")}
+                  />
+                  <ToggleRow
+                    icon={<Banknote className="size-4" />}
+                    label="ATM"
+                    checked={card.atmEnabled}
+                    disabled={busy(card)}
+                    onCheckedChange={(v) => updateCard(card, { atm_enabled: v }, v ? "ATM withdrawals enabled" : "ATM withdrawals disabled")}
+                  />
+                  <ToggleRow
+                    icon={<Nfc className="size-4" />}
+                    label="Contactless"
+                    checked={card.contactlessEnabled}
+                    disabled={busy(card)}
+                    onCheckedChange={(v) => updateCard(card, { contactless_enabled: v }, v ? "Contactless enabled" : "Contactless disabled")}
+                  />
+                </div>
+
+                {/* Limits */}
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   <div className="rounded-lg bg-muted px-3 py-2">
                     <p className="text-xs text-muted-foreground">Daily limit</p>
-                    <p className="font-semibold text-navy-100">{card.dailyLimit ? formatMoney(card.dailyLimit, "USD") : "—"}</p>
+                    <p className="font-semibold text-navy-100">{card.dailyLimit ? formatMoney(card.dailyLimit, "USD") : "No limit"}</p>
                   </div>
                   <div className="rounded-lg bg-muted px-3 py-2">
-                    <p className="text-xs text-muted-foreground">Expiry</p>
-                    <p className="font-semibold text-navy-100">{formatCardExpiry(card.expMonth, card.expYear)}</p>
+                    <p className="text-xs text-muted-foreground">Monthly limit</p>
+                    <p className="font-semibold text-navy-100">{card.monthlyLimit ? formatMoney(card.monthlyLimit, "USD") : "No limit"}</p>
                   </div>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <p className="text-xs text-muted-foreground">Expires {formatCardExpiry(card.expMonth, card.expYear)}</p>
+                  <EditLimitsDialog card={card} />
                 </div>
               </CardContent>
             </Card>

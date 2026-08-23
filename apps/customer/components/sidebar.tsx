@@ -12,9 +12,13 @@ import {
   Coins,
   Bell,
   UserCircle2,
+  Users,
   FileText,
+  HelpCircle,
   Menu,
   X,
+  ArrowRightLeft,
+  CalendarClock,
   type LucideIcon,
 } from "lucide-react";
 import { Logo, cn } from "@capitech/ui";
@@ -23,10 +27,14 @@ const NAV_ITEMS: { href: string; label: string; icon: LucideIcon; badge?: string
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
   { href: "/accounts", label: "Accounts", icon: Wallet },
   { href: "/transfers", label: "Transfers", icon: ArrowLeftRight },
+  { href: "/convert", label: "Convert", icon: ArrowRightLeft },
+  { href: "/standing-orders", label: "Standing Orders", icon: CalendarClock },
   { href: "/cards", label: "Cards", icon: CreditCard },
   { href: "/deposits", label: "Term Deposits", icon: PiggyBank },
   { href: "/crypto", label: "Crypto", icon: Coins },
   { href: "/statements", label: "Statements", icon: FileText },
+  { href: "/help", label: "Help", icon: HelpCircle },
+  { href: "/team", label: "Team", icon: Users },
 ];
 
 const BOTTOM_ITEMS = [

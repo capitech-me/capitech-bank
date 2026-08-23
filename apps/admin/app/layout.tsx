@@ -14,6 +14,11 @@ export const metadata: Metadata = {
   title: { default: "Back Office | Capitech Bank", template: "%s | Capitech Back Office" },
   description: "Capitech Bank operations console.",
   robots: { index: false, follow: false },
+  manifest: "/admin/manifest.webmanifest",
+  icons: {
+    icon: "/admin/icon.svg",
+    apple: "/admin/favicon.ico",
+  },
 };
 
 export const viewport: Viewport = {

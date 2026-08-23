@@ -49,7 +49,10 @@ export interface CardVM {
   status: string;
   frozen: boolean;
   onlineEnabled: boolean;
+  atmEnabled: boolean;
+  contactlessEnabled: boolean;
   dailyLimit: string | null;
+  monthlyLimit: string | null;
   nameOnCard: string | null;
   accountId: string;
 }
@@ -155,8 +158,8 @@ const demoTransactions: TransactionVM[] = [
 ];
 
 const demoCards: CardVM[] = [
-  { id: "card-1", brand: "visa", last4: "4242", expMonth: 8, expYear: 2030, status: "active", frozen: false, onlineEnabled: true, dailyLimit: "2000.00", nameOnCard: "JANE DOE", accountId: "acct-100" },
-  { id: "card-2", brand: "mastercard", last4: "5518", expMonth: 11, expYear: 2029, status: "active", frozen: true, onlineEnabled: true, dailyLimit: "500.00", nameOnCard: "JANE DOE", accountId: "acct-100" },
+  { id: "card-1", brand: "visa", last4: "4242", expMonth: 8, expYear: 2030, status: "active", frozen: false, onlineEnabled: true, atmEnabled: false, contactlessEnabled: true, dailyLimit: "2000.00", monthlyLimit: "10000.00", nameOnCard: "JANE DOE", accountId: "acct-100" },
+  { id: "card-2", brand: "mastercard", last4: "5518", expMonth: 11, expYear: 2029, status: "active", frozen: true, onlineEnabled: true, atmEnabled: true, contactlessEnabled: false, dailyLimit: "500.00", monthlyLimit: "2500.00", nameOnCard: "JANE DOE", accountId: "acct-100" },
 ];
 
 const demoDeposits: DepositVM[] = [
@@ -221,7 +224,10 @@ interface CardsRow {
   status: string;
   frozen: boolean;
   online_enabled: boolean;
+  atm_enabled: boolean;
+  contactless_enabled: boolean;
   daily_limit: string;
+  monthly_limit: string;
   name_on_card: string;
   account_id: string;
 }
@@ -330,7 +336,10 @@ export async function getCards(): Promise<CardVM[]> {
     status: row.status,
     frozen: row.frozen,
     onlineEnabled: row.online_enabled,
+    atmEnabled: row.atm_enabled,
+    contactlessEnabled: row.contactless_enabled,
     dailyLimit: row.daily_limit,
+    monthlyLimit: row.monthly_limit,
     nameOnCard: row.name_on_card,
     accountId: row.account_id,
   }));

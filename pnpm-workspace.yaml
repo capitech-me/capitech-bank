@@ -5,6 +5,7 @@ packages:
 # pnpm 11 supply-chain settings
 allowBuilds:
   unrs-resolver: true
+  '@sentry/cli': true
 
 minimumReleaseAgeExclude:
   - '@turbo/darwin-64@2.10.10'

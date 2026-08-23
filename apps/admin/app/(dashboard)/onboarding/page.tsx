@@ -1,11 +1,13 @@
 import { formatRelativeTime } from "@capitech/lib";
 import { Button } from "@capitech/ui";
-import { getKycQueue } from "@/lib/data";
+import { getKycDocuments, getKycQueue } from "@/lib/data";
 import { RiskBadge, StatusBadge } from "@/components/status-badge";
 import { ApproveKycButton } from "@/components/approve-kyc-button";
+import { KycDocumentsButton } from "@/components/kyc-documents-button";
 
 export default async function OnboardingPage() {
   const queue = await getKycQueue();
+  const documentsByCustomer = await getKycDocuments(queue.map((q) => q.id));
 
   return (
     <div className="mx-auto max-w-6xl space-y-6">
@@ -28,6 +30,7 @@ export default async function OnboardingPage() {
                 <th className="px-4 py-3 font-medium">Risk</th>
                 <th className="px-4 py-3 font-medium">Submitted</th>
                 <th className="px-4 py-3 font-medium">Status</th>
+                <th className="px-4 py-3 font-medium">Documents</th>
                 <th className="px-4 py-3 text-right font-medium">Action</th>
               </tr>
             </thead>
@@ -43,6 +46,9 @@ export default async function OnboardingPage() {
                   <td className="px-4 py-3"><RiskBadge score={item.riskScore} /></td>
                   <td className="px-4 py-3 text-muted-foreground">{formatRelativeTime(item.submittedAt)}</td>
                   <td className="px-4 py-3"><StatusBadge status="pending" /></td>
+                  <td className="px-4 py-3">
+                    <KycDocumentsButton customerId={item.id} documents={documentsByCustomer[item.id] ?? []} />
+                  </td>
                   <td className="px-4 py-3 text-right">
                     <ApproveKycButton itemId={item.id} />
                   </td>
@@ -50,7 +56,7 @@ export default async function OnboardingPage() {
               ))}
               {queue.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-4 py-12 text-center text-muted-foreground">
+                  <td colSpan={8} className="px-4 py-12 text-center text-muted-foreground">
                     Queue is clear — no pending applications.
                   </td>
                 </tr>
