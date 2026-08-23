@@ -16,10 +16,8 @@ const DOC_STATUS_STYLES: Record<string, string> = {
 };
 
 export function KycDocumentsButton({
-  customerId,
   documents,
 }: {
-  customerId: string;
   documents: KycDocumentRow[];
 }) {
   const [open, setOpen] = useState(false);

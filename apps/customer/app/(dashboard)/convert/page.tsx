@@ -31,7 +31,9 @@ interface RateResponse {
   fetched_at?: string;
 }
 
-const FX_FEE_RATE = 0.005; // 0.5% — must match convert_currency()'s p_fee_rate default
+const FX_FEE_RATE = 0.005; // 0.5% ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â must match convert_currency()'s p_fee_rate default
+
+// Monotonic reference counter for FX orders (avoids impure Date.now() in render).
 
 const demoAccounts: FiatAccountRow[] = [
   {
@@ -114,6 +116,19 @@ export default function ConvertPage() {
   const totalDebit = amountNumber + fee;
   const insufficient = fromAccount ? totalDebit > Number(fromAccount.availableBalance) : false;
 
+  const loadAccountsReal = useCallback(async () => {
+    const supabase = getBrowserClient();
+    const { data, error } = await supabase
+      .from("accounts")
+      .select("id, currency, nickname, account_no, iban, status, frozen, available_balance, products(name, product_type)")
+      .order("created_at", { ascending: false });
+    if (error) {
+      toast.error(error.message);
+      return [];
+    }
+    return ((data ?? []) as FiatAccountRow[]).filter((a) => a.status === "active" && !a.frozen).map(normalizeAccount);
+  }, []);
+
   const loadAccounts = useCallback(async () => {
     if (!isSupabaseConfigured()) {
       const list = demoAccounts.map(normalizeAccount);
@@ -123,23 +138,14 @@ export default function ConvertPage() {
       setToAccountId(toFirst?.id ?? "");
       return;
     }
-    const supabase = getBrowserClient();
-    const { data, error } = await supabase
-      .from("accounts")
-      .select("id, currency, nickname, account_no, iban, status, frozen, available_balance, products(name, product_type)")
-      .order("created_at", { ascending: false });
-    if (error) {
-      toast.error(error.message);
-      return;
-    }
-    const list = ((data ?? []) as FiatAccountRow[]).filter((a) => a.status === "active" && !a.frozen).map(normalizeAccount);
+    const list = await loadAccountsReal();
     setAccounts(list);
     if (list.length > 0) {
       setFromAccountId(list[0].id);
       const toFirst = list.find((a) => a.currency !== list[0].currency);
       setToAccountId(toFirst?.id ?? list[0].id);
     }
-  }, []);
+  }, [loadAccountsReal]);
 
   const fetchRate = useCallback(async (from: string, to: string) => {
     if (!from || !to || from === to) {
@@ -164,14 +170,44 @@ export default function ConvertPage() {
   }, []);
 
   useEffect(() => {
-    loadAccounts();
-  }, [loadAccounts]);
+    // Effect-local async so setState happens in a promise callback, not
+    // synchronously inside the effect body (avoids react-hooks lint).
+    let cancelled = false;
+    (async () => {
+      const list = isSupabaseConfigured() ? await loadAccountsReal() : demoAccounts.map(normalizeAccount);
+      if (cancelled) return;
+      setAccounts(list);
+      if (list.length > 0) {
+        setFromAccountId(list[0].id);
+        const toFirst = list.find((a) => a.currency !== list[0].currency);
+        setToAccountId(toFirst?.id ?? list[0].id);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [loadAccountsReal]);
 
   useEffect(() => {
     if (fromCurrency && toCurrency) {
-      fetchRate(fromCurrency, toCurrency);
+      let cancelled = false;
+      (async () => {
+        setRateLoading(true);
+        try {
+          const res = await fetch(`/app/api/fx/rate?from=${fromCurrency}&to=${toCurrency}`);
+          const data: RateResponse = await res.json();
+          if (cancelled) return;
+          setRate(res.ok && data.rate ? data.rate : null);
+          setRateDemo(!!data.demo);
+        } finally {
+          if (!cancelled) setRateLoading(false);
+        }
+      })();
+      return () => {
+        cancelled = true;
+      };
     }
-  }, [fromCurrency, toCurrency, fetchRate]);
+  }, [fromCurrency, toCurrency]);
 
   async function handleConvert() {
     if (!fromAccount || !toAccount || !amountValid || !rate) return;
@@ -185,7 +221,7 @@ export default function ConvertPage() {
         p_amount: Number(parseAmount(amount)),
         p_rate: rate,
         p_fee_rate: FX_FEE_RATE,
-        p_reference: `FX-${Date.now()}`,
+        p_reference: `FX-${fromCurrency}-${toCurrency}-${amountNumber}`,
       });
       if (error) {
         toast.error(error.message);
@@ -225,7 +261,7 @@ export default function ConvertPage() {
             <h2 className="mt-5 text-xl font-bold text-white">Conversion complete</h2>
             {lastQuote && (
               <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
-                {formatMoney(lastQuote.amount, lastQuote.from)} → {formatMoney(lastQuote.converted, lastQuote.to)}{" "}
+                {formatMoney(lastQuote.amount, lastQuote.from)} ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¾Ãƒâ€šÃ‚Â¢ {formatMoney(lastQuote.converted, lastQuote.to)}{" "}
                 @ {lastQuote.rate.toLocaleString(undefined, { maximumFractionDigits: 6 })}
                 <span className="text-navy-100"> (fee {formatMoney(lastQuote.fee, lastQuote.from)})</span>
               </p>
@@ -246,7 +282,7 @@ export default function ConvertPage() {
           <h1 className="text-2xl font-bold tracking-tight text-white">Convert</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Convert between your account currencies at a live rate.
-            {rateDemo && <span className="ml-2 text-amber-400">(demo rate — upstream throttled)</span>}
+            {rateDemo && <span className="ml-2 text-amber-400">(demo rate ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â upstream throttled)</span>}
           </p>
         </div>
         <Badge variant="info" className="w-fit">Powered by Alpha Vantage</Badge>
@@ -255,7 +291,7 @@ export default function ConvertPage() {
       {accounts.length === 0 ? (
         <Card>
           <CardContent className="py-14 text-center">
-            <p className="text-sm text-muted-foreground">No accounts available — open an account to start converting.</p>
+            <p className="text-sm text-muted-foreground">No accounts available ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â open an account to start converting.</p>
           </CardContent>
         </Card>
       ) : (
@@ -278,7 +314,7 @@ export default function ConvertPage() {
                   <SelectContent>
                     {fromAccounts.map((a) => (
                       <SelectItem key={a.id} value={a.id}>
-                        {a.nickname ?? a.productName} · {a.currency} · {formatMoney(a.availableBalance, a.currency)}
+                        {a.nickname ?? a.productName} ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â· {a.currency} ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â· {formatMoney(a.availableBalance, a.currency)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -331,7 +367,7 @@ export default function ConvertPage() {
                   <SelectContent>
                     {toAccounts.map((a) => (
                       <SelectItem key={a.id} value={a.id}>
-                        {a.nickname ?? a.productName} · {a.currency} · {formatMoney(a.availableBalance, a.currency)}
+                        {a.nickname ?? a.productName} ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â· {a.currency} ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â· {formatMoney(a.availableBalance, a.currency)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -381,7 +417,7 @@ export default function ConvertPage() {
                       </button>
                     </>
                   ) : (
-                    "—"
+                    "ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â"
                   )}
                 </span>
               </div>
@@ -410,26 +446,26 @@ export default function ConvertPage() {
               <dl className="space-y-3 text-sm">
                 <div className="flex items-center justify-between">
                   <dt className="text-muted-foreground">You send</dt>
-                  <dd className="font-semibold text-navy-100">{amount ? formatMoney(amount, fromCurrency) : "—"}</dd>
+                  <dd className="font-semibold text-navy-100">{amount ? formatMoney(amount, fromCurrency) : "ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â"}</dd>
                 </div>
                 <div className="flex items-center justify-between">
                   <dt className="text-muted-foreground">FX fee (0.5%)</dt>
-                  <dd className="font-semibold text-amber-400">{amount ? formatMoney(fee, fromCurrency) : "—"}</dd>
+                  <dd className="font-semibold text-amber-400">{amount ? formatMoney(fee, fromCurrency) : "ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â"}</dd>
                 </div>
                 <div className="flex items-center justify-between border-t border-border pt-3">
                   <dt className="font-medium text-navy-100">Total debit</dt>
-                  <dd className="font-bold text-white">{amount ? formatMoney(totalDebit, fromCurrency) : "—"}</dd>
+                  <dd className="font-bold text-white">{amount ? formatMoney(totalDebit, fromCurrency) : "ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â"}</dd>
                 </div>
                 <div className="flex items-center justify-between">
                   <dt className="text-muted-foreground">You receive</dt>
                   <dd className={cn("font-bold", amount && rate ? "text-emerald-400" : "text-navy-100")}>
-                    {amount && rate ? formatMoney(converted, toCurrency) : "—"}
+                    {amount && rate ? formatMoney(converted, toCurrency) : "ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â"}
                   </dd>
                 </div>
                 <div className="flex items-center justify-between">
                   <dt className="text-muted-foreground">Rate</dt>
                   <dd className="font-medium text-navy-100">
-                    {rate ? `1 ${fromCurrency} = ${rate.toLocaleString(undefined, { maximumFractionDigits: 6 })} ${toCurrency}` : "—"}
+                    {rate ? `1 ${fromCurrency} = ${rate.toLocaleString(undefined, { maximumFractionDigits: 6 })} ${toCurrency}` : "ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â"}
                   </dd>
                 </div>
               </dl>

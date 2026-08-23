@@ -114,7 +114,6 @@ export default function OnboardingPage() {
     return () => {
       cancelled = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function submitOnboarding() {
@@ -202,7 +201,7 @@ export default function OnboardingPage() {
             <h1 className="mt-5 text-2xl font-bold text-white">Application received</h1>
             <p className="mx-auto mt-3 max-w-sm text-sm text-muted-foreground">
               Our compliance team is reviewing your details. You will receive an email as soon
-              as your account is approved — usually within one business day.
+              as your account is approved â€” usually within one business day.
             </p>
             <Button className="mt-7" onClick={() => router.push("/")}>
               Back to dashboard
@@ -227,7 +226,7 @@ export default function OnboardingPage() {
 
         <Card>
           <CardContent className="pt-6">
-            {/* Step 0 — type */}
+            {/* Step 0 â€” type */}
             {step === 0 && (
               <div className="space-y-5">
                 <div>
@@ -262,7 +261,7 @@ export default function OnboardingPage() {
               </div>
             )}
 
-            {/* Step 1 — details */}
+            {/* Step 1 â€” details */}
             {step === 1 && type === "retail" && (
               <div className="space-y-4">
                 <div>
@@ -378,13 +377,13 @@ export default function OnboardingPage() {
               </div>
             )}
 
-            {/* Step 2 — documents */}
+            {/* Step 2 â€” documents */}
             {step === 2 && (
               <div className="space-y-5">
                 <div>
                   <CardTitle>Identity verification</CardTitle>
                   <CardDescription className="mt-1">
-                    Verify your identity with Didit — scan your ID, take a selfie and confirm your
+                    Verify your identity with Didit â€” scan your ID, take a selfie and confirm your
                     details in the secure flow. Optional: upload supporting documents below.
                   </CardDescription>
                 </div>
@@ -394,7 +393,7 @@ export default function OnboardingPage() {
                   <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
                     Powered by Didit. Your documents, biometrics and device information are
                     processed by our verification partner in line with our Privacy Policy. The
-                    result is applied automatically — no manual review required.
+                    result is applied automatically â€” no manual review required.
                   </p>
                   <div className="mt-3">
                     <VerifyButton label="Verify my identity with Didit" />
@@ -419,7 +418,7 @@ export default function OnboardingPage() {
                   <p className="mt-3 text-sm font-medium text-navy-100">
                     {docFile ? docFile.name : "Click to upload your document"}
                   </p>
-                  <p className="mt-1 text-xs text-muted-foreground">PDF, JPG or PNG — max 10 MB</p>
+                  <p className="mt-1 text-xs text-muted-foreground">PDF, JPG or PNG â€” max 10 MB</p>
                   <input
                     type="file"
                     accept=".pdf,.jpg,.jpeg,.png"
@@ -436,7 +435,7 @@ export default function OnboardingPage() {
               </div>
             )}
 
-            {/* Step 3 — review */}
+            {/* Step 3 â€” review */}
             {step === 3 && (
               <div className="space-y-5">
                 <div>
@@ -451,14 +450,14 @@ export default function OnboardingPage() {
                       <Row label="Nationality" value={COUNTRIES.find((c) => c.alpha2 === nationality)?.name ?? nationality} />
                       <Row label="Residence" value={COUNTRIES.find((c) => c.alpha2 === residence)?.name ?? residence} />
                       <Row label="Address" value={`${address}, ${city}`} />
-                      <Row label="Document" value={`${docType} — ${docFile?.name}`} />
+                      <Row label="Document" value={`${docType} â€” ${docFile?.name}`} />
                     </>
                   ) : (
                     <>
                       <Row label="Company" value={legalName} />
                       <Row label="Registration no." value={regNumber} />
                       <Row label="Incorporated in" value={COUNTRIES.find((c) => c.alpha2 === incorpCountry)?.name ?? incorpCountry} />
-                      <Row label="Document" value={`${docType} — ${docFile?.name}`} />
+                      <Row label="Document" value={`${docType} â€” ${docFile?.name}`} />
                     </>
                   )}
                 </div>
@@ -471,7 +470,7 @@ export default function OnboardingPage() {
                 <div className="flex justify-between">
                   <Button variant="ghost" onClick={() => setStep(2)}><ArrowLeft className="size-4" /> Back</Button>
                   <Button onClick={submitOnboarding} disabled={submitting}>
-                    {submitting ? "Submitting…" : "Submit application"}
+                    {submitting ? "Submittingâ€¦" : "Submit application"}
                     {!submitting && <ArrowRight className="size-4" />}
                   </Button>
                 </div>

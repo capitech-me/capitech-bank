@@ -18,7 +18,7 @@ function SignInForm() {
 
   const supabaseConfigured = !!process.env.NEXT_PUBLIC_SUPABASE_URL && !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-  // "Try demo" — /sign-in?demo=1 fills the demo credentials and signs in.
+  // "Try demo" â€” /sign-in?demo=1 fills the demo credentials and signs in.
   // A ref flag guarantees it only fires once. The sign-in uses the literal
   // demo credentials directly (bypassing the stale-closure state problem),
   // then forwards to the customer app (customer role -> /app).
@@ -41,7 +41,6 @@ function SignInForm() {
       }
     }, 100);
     return () => clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
   // Self-heal: the customer/admin apps redirect unauthenticated visitors back
@@ -64,7 +63,7 @@ function SignInForm() {
           .maybeSingle();
         role = profile?.role ?? null;
       } catch {
-        // table may not exist yet — treat as customer
+        // table may not exist yet â€” treat as customer
       }
       window.location.href = getPostAuthRedirect(role);
     })();
@@ -124,7 +123,7 @@ function SignInForm() {
     try {
       // Scope the profile lookup to the signed-in user. Staff RLS lets them
       // read every profile, so an unfiltered maybeSingle() returns multiple
-      // rows and throws — which used to fall through to the customer app.
+      // rows and throws â€” which used to fall through to the customer app.
       const { data: userData } = await supabase.auth.getUser();
       if (userData.user) {
         const { data: profile } = await supabase
@@ -135,7 +134,7 @@ function SignInForm() {
         role = profile?.role ?? null;
       }
     } catch {
-      // table may not exist yet — treat as customer
+      // table may not exist yet â€” treat as customer
     }
     window.location.href = getPostAuthRedirect(role);
   }
@@ -219,7 +218,7 @@ function SignInForm() {
                       id="password"
                       type="password"
                       autoComplete="current-password"
-                      placeholder="••••••••"
+                      placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
                       required
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
@@ -260,7 +259,7 @@ function SignInForm() {
                 )}
 
                 <Button type="submit" size="lg" className="w-full bg-brand-600 text-white shadow-sm hover:bg-brand-500" disabled={loading || !supabaseConfigured}>
-                  {loading ? "Signing in…" : factorId ? "Verify code" : "Sign in"}
+                  {loading ? "Signing inâ€¦" : factorId ? "Verify code" : "Sign in"}
                   {!loading && <ArrowRight className="size-4" />}
                 </Button>
               </form>

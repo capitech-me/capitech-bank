@@ -47,7 +47,7 @@ export default async function OnboardingPage() {
                   <td className="px-4 py-3 text-muted-foreground">{formatRelativeTime(item.submittedAt)}</td>
                   <td className="px-4 py-3"><StatusBadge status="pending" /></td>
                   <td className="px-4 py-3">
-                    <KycDocumentsButton customerId={item.id} documents={documentsByCustomer[item.id] ?? []} />
+                    <KycDocumentsButton documents={documentsByCustomer[item.id] ?? []} />
                   </td>
                   <td className="px-4 py-3 text-right">
                     <ApproveKycButton itemId={item.id} />

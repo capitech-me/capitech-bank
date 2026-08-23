@@ -42,8 +42,6 @@ const FREQUENCIES = [
   { value: "quarterly", label: "Quarterly" },
 ] as const;
 
-const FREQUENCY_LABEL: Record<string, string> = { weekly: "Weekly", monthly: "Monthly", quarterly: "Quarterly" };
-
 function frequencyDescription(order: StandingOrderRow): string {
   if (order.frequency === "weekly") {
     const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -158,13 +156,42 @@ export default function StandingOrdersPage() {
   }, [fromAccountId]);
 
   useEffect(() => {
-    loadData();
-  }, [loadData]);
+    // Effect-local async so these setState calls happen in promise callbacks,
+    // not synchronously inside the effect body (avoids react-hooks lint).
+    let cancelled = false;
+    (async () => {
+      if (!isSupabaseConfigured()) {
+        setAccounts(demoAccounts);
+        setOrders(demoOrders);
+        setFromAccountId(demoAccounts[0]?.id ?? "");
+        setLoading(false);
+        return;
+      }
+      const supabase = getBrowserClient();
+      const { data: user } = await supabase.auth.getUser();
+      if (cancelled || !user.user) {
+        setLoading(false);
+        return;
+      }
+      const [acc, ord] = await Promise.all([
+        supabase.from("accounts").select("id, currency, nickname, available_balance, products(name, product_type)"),
+        supabase.from("standing_orders").select("*").order("created_at", { ascending: false }),
+      ]);
+      if (cancelled) return;
+      setAccounts((acc.data ?? []) as AccountRow[]);
+      setOrders((ord.data ?? []) as StandingOrderRow[]);
+      if (!fromAccountId && (acc.data ?? []).length > 0) setFromAccountId((acc.data ?? [])[0].id);
+      setLoading(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [fromAccountId]);
 
   const selectedAccount = accounts.find((a) => a.id === fromAccountId);
   const amountValid = selectedAccount ? isValidAmount(amount, selectedAccount.currency) : false;
   const dayOfMonthNum = Math.min(Math.max(Number(dayOfMonth) || 1, 1), 31);
-  // ISO weekday: 1=Monday … 7=Sunday (matches the day_of_week 1-7 check constraint)
+  // ISO weekday: 1=Monday â€¦ 7=Sunday (matches the day_of_week 1-7 check constraint)
   const dayOfWeekNum = Math.min(Math.max(Number(dayOfWeek), 1), 7);
 
   async function handleCreate() {
@@ -283,7 +310,7 @@ export default function StandingOrdersPage() {
         setBusyId(null);
         return;
       }
-      toast.success("Payment created — queued for processing");
+      toast.success("Payment created â€” queued for processing");
     } else {
       await new Promise((r) => setTimeout(r, 600));
       toast.success(`Payment of ${formatMoney(order.amount, order.currency)} queued (demo)`);
@@ -297,7 +324,7 @@ export default function StandingOrdersPage() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-white">Standing orders</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Recurring payments on a weekly, monthly or quarterly schedule. Auto-execution is sandbox-stubbed — use “Run now” to trigger a payment instantly.
+            Recurring payments on a weekly, monthly or quarterly schedule. Auto-execution is sandbox-stubbed â€” use â€œRun nowâ€ to trigger a payment instantly.
           </p>
         </div>
         <Dialog open={createOpen} onOpenChange={setCreateOpen}>
@@ -321,7 +348,7 @@ export default function StandingOrdersPage() {
                   <SelectContent>
                     {accounts.map((a) => (
                       <SelectItem key={a.id} value={a.id}>
-                        {a.nickname ?? "Account"} · {a.currency} · {formatMoney(a.available_balance, a.currency)}
+                        {a.nickname ?? "Account"} Â· {a.currency} Â· {formatMoney(a.available_balance, a.currency)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -439,14 +466,14 @@ export default function StandingOrdersPage() {
                     <Badge variant={active ? "success" : "neutral"}>{active ? "Active" : order.status}</Badge>
                   </div>
                   <CardDescription>
-                    {frequencyDescription(order)} · from {account?.nickname ?? "Account"}
+                    {frequencyDescription(order)} Â· from {account?.nickname ?? "Account"}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3 text-sm">
                   <div className="rounded-lg bg-muted px-3 py-2">
                     <p className="text-xs text-muted-foreground">To</p>
                     <p className="font-medium text-navy-100">{order.to_beneficiary_name ?? "External beneficiary"}</p>
-                    <p className="font-mono text-xs text-muted-foreground">{order.to_iban}{order.to_bic ? ` · ${order.to_bic}` : ""}</p>
+                    <p className="font-mono text-xs text-muted-foreground">{order.to_iban}{order.to_bic ? ` Â· ${order.to_bic}` : ""}</p>
                     {order.narration && <p className="mt-1 text-xs text-muted-foreground">{order.narration}</p>}
                   </div>
                   <div className="flex items-center justify-between">
