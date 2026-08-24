@@ -40,3 +40,6 @@ pnpm-debug.log*
 # editor
 .vscode/
 .idea/
+
+# Playwright
+test-results/
