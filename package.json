@@ -1,31 +1,32 @@
 {
-  "name": "capitech-bank",
-  "version": "0.1.0",
-  "private": true,
-  "description": "Capitech Bank - full-fledged digital bank platform (monorepo)",
-  "packageManager": "pnpm@11.9.0",
-  "engines": {
-    "node": ">=20"
-  },
-  "scripts": {
-    "dev": "turbo dev",
-    "build": "turbo build",
-    "lint": "turbo lint",
-    "typecheck": "turbo typecheck",
-    "dev:landing": "pnpm --filter @capitech/landing dev",
-    "dev:customer": "pnpm --filter @capitech/customer dev",
-    "dev:admin": "pnpm --filter @capitech/admin dev",
-    "test:e2e": "playwright test"
-  },
-  "devDependencies": {
-    "@playwright/test": "^1.45.0",
-    "@supabase/supabase-js": "^2.112.3",
-    "turbo": "^2.10.10",
-    "typescript": "^5.7.0"
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "unrs-resolver"
-    ]
-  }
+    "name":  "capitech-bank",
+    "version":  "0.1.0",
+    "private":  true,
+    "description":  "Capitech Bank - full-fledged digital bank platform (monorepo)",
+    "packageManager":  "pnpm@11.9.0",
+    "engines":  {
+                    "node":  "\u003e=20"
+                },
+    "scripts":  {
+                    "dev":  "turbo dev",
+                    "build":  "turbo build",
+                    "lint":  "turbo lint",
+                    "typecheck":  "turbo typecheck",
+                    "dev:landing":  "pnpm --filter @capitech/landing dev",
+                    "dev:customer":  "pnpm --filter @capitech/customer dev",
+                    "dev:admin":  "pnpm --filter @capitech/admin dev",
+                    "test:e2e":  "playwright test",
+                    "test:e2e:prod":  "playwright test -c playwright.prod.config.ts"
+                },
+    "devDependencies":  {
+                            "@playwright/test":  "^1.45.0",
+                            "@supabase/supabase-js":  "^2.112.3",
+                            "turbo":  "^2.10.10",
+                            "typescript":  "^5.7.0"
+                        },
+    "pnpm":  {
+                 "onlyBuiltDependencies":  [
+                                               "unrs-resolver"
+                                           ]
+             }
 }
