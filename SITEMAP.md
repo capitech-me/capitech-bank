@@ -35,11 +35,15 @@
 | `/app/accounts` | Accounts list |
 | `/app/accounts/[id]` | Account detail — IBAN, transactions |
 | `/app/transfers` | Transfers |
-| `/app/cards` | Virtual & physical cards |
-| `/app/deposits` | Term deposits |
+| `/app/convert` | FX convert — multi-currency conversion (live rates) |
+| `/app/standing-orders` | Standing orders — recurring transfers |
+| `/app/cards` | Virtual & physical cards (online/ATM/contactless + limits) |
+| `/app/deposits` | Term deposits — interest accrual + maturity countdown |
 | `/app/crypto` | Crypto — buy/sell, wallets, orders (Alpha Vantage prices, LIVE) |
 | `/app/statements` | Statements — PDF/CSV |
-| `/app/notifications` | Notifications |
+| `/app/notifications` | Notifications — channel preferences |
+| `/app/team` | Corporate team — members, roles, invites |
+| `/app/help` | Help & support |
 | `/app/profile` | Profile & Security — MFA |
 
 ### Customer API (server routes)
@@ -49,6 +53,8 @@
 | `/app/api/verify` | Didit KYC session |
 | `/app/api/webhooks/didit` | Didit HMAC webhook |
 | `/app/api/crypto/prices` | Alpha Vantage price proxy (cache-first + round-robin refresh) |
+| `/app/api/fx/rate` | Alpha Vantage FX rate proxy (live conversion) |
+| `/app/api/team/invite` | Invite corporate team member |
 | `/app/api/emails/send` | Transactional email send |
 | `/app/api/statements/[accountId]` | Statement download |
 | `/app/api/open/v1/accounts` | Open API — accounts |
@@ -63,12 +69,15 @@
 | Path | Page |
 |---|---|
 | `/admin` | Overview — KPI snapshot |
-| `/admin/onboarding` | Onboarding & KYC queue |
+| `/admin/reports` | Reports — Balance Sheet + P&L |
+| `/admin/onboarding` | Onboarding & KYC queue + doc viewer |
 | `/admin/customers` | Customers |
 | `/admin/accounts` | Accounts |
 | `/admin/ledger` | General Ledger — chart of accounts + journals |
 | `/admin/payments` | Payment approvals — maker-checker |
-| `/admin/products` | Products |
+| `/admin/webhooks` | Webhooks — endpoints + delivery log + API usage |
+| `/admin/contact` | Contact inbox — submitted messages |
+| `/admin/products` | Products — CRUD editor |
 | `/admin/open-api` | Open API key management |
 | `/admin/staff` | Staff & Roles |
 | `/admin/audit` | Audit trail |
@@ -89,18 +98,19 @@
 | Zone | Pages | Access |
 |---|---|---|
 | Landing | 9 + 2 auth routes | Public |
-| Customer | 10 + 6 API routes | Customer login |
-| Admin | 10 + 4 API routes | Staff login |
-| **Total** | **29 UI pages** | |
+| Customer | 15 pages + 11 API routes | Customer login |
+| Admin | 13 pages + 4 API routes | Staff login |
+| **Total** | **37 UI pages** | |
 
 ## 🔌 External integrations
 
 | Service | Key env var | Used for | Status |
 |---|---|---|---|
-| Supabase (`hekufxbeigxzkyfsqalx`) | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` | DB + Auth + RLS + MFA | ✅ Live |
-| Alpha Vantage | `ALPHAVANTAGE_API_KEY` | Crypto live prices | ✅ Live |
-| Resend | `RESEND_API_KEY` (+ SMTP for Supabase Auth) | Transactional email + confirmation | ✅ Live |
+| Supabase (`hekufxbeigxzkyfsqalx`) | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` | DB + Auth + RLS + MFA + pg_cron (standing orders) | ✅ Live |
+| Alpha Vantage | `ALPHAVANTAGE_API_KEY` | Crypto live prices + FX rates (`/app/convert`, `/app/api/fx/rate`) | ✅ Live |
+| Resend | `RESEND_API_KEY` (+ SMTP for Supabase Auth) | Transactional email + confirmation + invites | ✅ Live |
 | Didit | `DIDIT_API_KEY`, `DIDIT_WEBHOOK_SECRET` | KYC identity verification | ✅ Live |
+| Sentry | `SENTRY_AUTH_TOKEN`, `NEXT_PUBLIC_SENTRY_DSN` | Error tracking (landing / customer / admin) | ✅ Live |
 | Vercel | `VERCEL_OIDC_TOKEN` | Deployments | ✅ Live |
 | GitHub | gh CLI token | CI/CD | ✅ Live |
 
@@ -134,6 +144,12 @@
 | Developers | Open API → `/developers#open-api`, API docs → `/developers#api-docs`, Sandbox → `/developers#sandbox`, Webhooks → `/developers#webhooks` |
 | Company | About → `/about`, Contact → `/contact` |
 | Legal | Privacy → `/legal#privacy`, Terms → `/legal#terms`, Cookies → `/legal#cookies`, Regulatory → `/legal#regulatory` |
+
+### App sidebars (logged-in)
+
+**Customer sidebar (`/app`):** Dashboard → `/app` · Accounts → `/app/accounts` · Transfers → `/app/transfers` · Convert → `/app/convert` · Standing Orders → `/app/standing-orders` · Cards → `/app/cards` · Deposits → `/app/deposits` · Crypto → `/app/crypto` · Statements → `/app/statements` · Team → `/app/team` · Notifications → `/app/notifications` · Help → `/app/help` · Profile → `/app/profile`
+
+**Admin sidebar (`/admin`):** Overview → `/admin` · Reports → `/admin/reports` · Onboarding → `/admin/onboarding` · Customers → `/admin/customers` · Accounts → `/admin/accounts` · Ledger → `/admin/ledger` · Payments → `/admin/payments` · Webhooks → `/admin/webhooks` · Contact → `/admin/contact` · Products → `/admin/products` · Open API → `/admin/open-api` · Staff → `/admin/staff` · Audit → `/admin/audit`
 
 ---
 

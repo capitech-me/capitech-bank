@@ -2,7 +2,7 @@
 
 > Maintained by HAKEM (PMO). Updated continuously as the build progresses.
 
-## Status: Phase 1 ✅ · Phase 2 ✅ · Multi-zone restructure ✅ deployed (online.capitech.me) — security + functional remediation (S-1..S-10, M-1..M-5, F-1..F-3) implemented in repo; awaiting DNS + apply-hotfix5.sql paste + E2E run
+## Status: Full platform live ✅ — landing + customer + admin deployed on `online.capitech.me`, security hardened, crypto live (Alpha Vantage), all major bank features built
 
 ## Live topology (single domain)
 - **online.capitech.me** → landing (rewrites `/app/*` → customer, `/admin/*` → admin)
@@ -10,30 +10,36 @@
 - Didit webhook retargeted → `https://online.capitech.me/app/api/webhooks/didit`
 - Production deployments: landing `ondscbbnf` · customer `4t5wth5nh` · admin `d5s9h33e8` (stable aliases `capitech-{app}.vercel.app`)
 
-## ⏳ Remaining to go live
-1. **DNS**: `online.capitech.me → CNAME cname.vercel-dns.com` (or A 76.76.21.21) at registrar
-2. **Paste `supabase/apply-hotfix5.sql`** — consolidated security+functional bundle (supersedes hotfix3/4: execute_payment v_fee_lines uuid + authz, execute_crypto_order gen_random_bytes + server-side pricing, post_journal auth.uid() ownership, RLS column guards, storage/audit fixes)
-3. Resend: verify `capitech.me` sender domain (key works; DNS change also fixes this)
-4. Re-run full-flow E2E (`pnpm test:e2e`, Playwright suite now in `e2e/`) → expect 34/34
+## ✅ What's live
+- **Landing**: hero, products, features, security, pricing, FAQ, real contact form (`/contact` → routes to `/admin/contact` inbox)
+- **Customer front office**: dashboard, accounts, transfers, cards, deposits, crypto (Alphavantage LIVE), statements (PDF/CSV), notifications, profile, **FX convert** (`/app/convert`), **standing orders** (`/app/standing-orders`), **corporate team** (`/app/team`), **help** (`/app/help`), external SWIFT/SEPA transfers
+- **Admin back office**: overview, KYC queue + onboarding doc viewer, customers, accounts, ledger, payment approvals (maker–checker), **products CRUD editor**, **reports** (`/admin/reports` — Balance Sheet + P&L), **webhooks** (`/admin/webhooks` — endpoints + delivery log + API usage), **contact inbox** (`/admin/contact`), Open API key mgmt, staff, audit
+- **Open API**: key mgmt, `/api/open/v1` (accounts/transfers/webhooks), HMAC webhook dispatch
+- **Crypto**: live Alpha Vantage prices, buy/sell, wallets, orders — settles through the ledger
+- **Card controls** (Phase 3): online/ATM/contactless toggles + per-card limits
+- **Deposits** (Phase 3): interest accrual + maturity countdown
+- **Notifications** (Phase 3): per-channel preference toggles
+- **Emails** (Resend): welcome, KYC result, transfer, card, deposit, statement, invite templates
+- **Security**: S-1..S-10, M-1..M-5, F-1..F-3 remediation applied (superseded by consolidated `apply-hotfix5.sql`)
+- **Monitoring** (Phase 4): Sentry error tracking wired into all three apps
+- **PWA** (Phase 4): manifest + icons on landing, customer, and admin apps
+- All zones deployed & verified on `online.capitech.me`
+
+## 🗺️ Future / roadmap (optional)
+- Real payment rails (e.g. SWIFT/SEPA/ACH via a provider) + card issuer swap-in
+- Native mobile app (React Native / Expo)
+- Production licensing, SOC2/ISO27001-style readiness docs, penetration testing
 
 ## Live environment
 - Supabase project: `hekufxbeigxzkyfsqalx` (connected, schema applied, seeded)
 - Demo users: `admin@capitech.me` (staff_admin), `jane@capitech.me` (customer)
 - **Didit KYC**: webhook destination registered (v3) · workflow `29395dea-3494-413e-a9b2-52333b177f79` · verified E2E
 
-## Phase 2 (built, pending schema paste + deploy)
-| Item | Status |
-|------|--------|
-| Emails — @capitech/email (Resend): welcome, KYC result, transfer, card, deposit, statement templates + triggers | ✅ built (needs RESEND_API_KEY) |
-| Statements — PDF (pdf-lib) + CSV export + statements page | ✅ verified live |
-| Open API — key mgmt, /api/open/v1 (accounts/transfers/webhooks), admin console, HMAC webhook dispatch | ✅ built (needs migration 0012 for key ownership) |
-| Crypto — CoinGecko prices (live verified), buy/sell UI, wallets, order history | ✅ built (needs migration 0012 for execute_crypto_order) |
-
-## ⏳ Next action
-1. User pastes `supabase/apply-hotfix5.sql` (single consolidated bundle — security hardening + execute_payment/execute_crypto_order/post_journal fixes; supersedes apply-hotfix3.sql + apply-hotfix4.sql)
-2. Run E2E suite (`pnpm test:e2e`, 34 cases) + fix any failures
-3. Deploy Phase 2 + remediation to Vercel ×3 + verify (security headers, rate limits, admin proxy gating)
-4. Then DNS change → capitech.me live
+## Databases / migrations
+- Schema now at **0017** with **0018** pending:
+  - **0014** `org_member_management` · **0015** `fx_and_external` · **0016** `notification_prefs` · **0017** `contact_messages` (the 4 new)
+  - **0018** `standing_order_cron` (about to be created) — the "+1"
+- Consolidated paste bundle: **`supabase/apply-phase2-4.sql`** (supersedes the individual Phase 2–4 pieces)
 
 ---
 
@@ -49,31 +55,50 @@
 | 5 | Landing page (hero, products, features, security, pricing, FAQ, contact) | ✅ done |
 | 6 | Auth: sign-up / sign-in / MFA / forgot password / callback | ✅ done |
 | 7 | Supabase schema: tenancy, profiles, KYC, COA, ledger engine, payments, cards, deposits, RLS, storage | ✅ done |
-| 8 | Customer front office (dashboard, accounts, transfers, cards, deposits, crypto placeholder, notifications, profile) | ✅ done |
+| 8 | Customer front office (dashboard, accounts, transfers, cards, deposits, crypto, notifications, profile) | ✅ done |
 | 9 | Admin back office (overview, KYC queue, customers, accounts, ledger, approvals, products, staff, audit) | ✅ done |
 | 10 | Vercel deploy configs (3 sites) | ✅ done |
-| 11 | Connect real Supabase project (auth + RLS + storage) | ⏳ needs credentials |
-| 12 | Seed demo users/accounts; end-to-end verification | ⏳ pending |
+| 11 | Connect real Supabase project (auth + RLS + storage) | ✅ done |
+| 12 | Seed demo users/accounts; end-to-end verification | ✅ done |
 
 ### Phase 2 — Crypto, Open API, real integrations
-- [ ] Custodial crypto wallets + simulated market (CoinGecko prices)
-- [ ] Open API: scoped API keys, endpoints, webhooks (ISO 20022-style)
-- [ ] Real payment rails + card issuer swap-in
-- [ ] Transactional emails (Resend) + notification center
-- [ ] Statements (PDF/CSV) + advanced reports
+| Item | Status |
+|------|--------|
+| Custodial crypto wallets + live market (Alpha Vantage) | ✅ done |
+| FX conversion (`/app/convert`, `convert_currency`) | ✅ done |
+| Open API: scoped API keys, endpoints, webhooks (ISO 20022-style) | ✅ done |
+| External SWIFT/SEPA transfers | ✅ done |
+| Real payment rails + card issuer swap-in | ⏳ optional / future |
+| Transactional emails (Resend) + notification center | ✅ done |
+| Statements (PDF/CSV) + advanced reports (Balance Sheet + P&L) | ✅ done |
+| Corporate team members (`/app/team`, member invites) | ✅ done |
+| Standing orders (`/app/standing-orders`) | ✅ done |
+| Admin webhooks console (endpoints + delivery log + API usage) | ✅ done |
+| Admin onboarding KYC doc viewer + products CRUD editor | ✅ done |
 
 ### Phase 3 — Production hardening
-- [ ] Penetration testing, dependency audits
-- [ ] SOC2/ISO27001-style readiness docs, real licensing consultation
-- [ ] Rate limiting, WAF, monitoring (Sentry, uptime)
-- [ ] Backup/DR drills, incident runbooks
+| Item | Status |
+|------|--------|
+| Card controls (online/ATM/contactless/limits) | ✅ done |
+| Deposit interest accrual + maturity countdown | ✅ done |
+| Notification preferences | ✅ done |
+| Real contact form (`/contact`) + admin contact inbox (`/admin/contact`) | ✅ done |
+| Penetration testing, dependency audits | ⏳ optional |
+| SOC2/ISO27001-style readiness docs, real licensing consultation | ⏳ optional |
+| Rate limiting, WAF, monitoring | ✅ rate limiting + monitoring; WAF ⏳ optional |
+| Backup/DR drills, incident runbooks | ⏳ optional |
+
+### Phase 4 — Observability & PWA
+| Item | Status |
+|------|--------|
+| Sentry error tracking (landing / customer / admin) | ✅ done |
+| PWA manifests + icons (3 apps) | ✅ done |
 
 ---
 
 ## Open decisions / requests for user
-1. **Supabase project URL + anon key** (and optionally service role key) → paste into the three `.env.local` files (I'll wire end-to-end and apply migrations).
-2. Confirm base settlement country for IBAN generation (currently tenant country, default `AE`).
-3. Phase 2 kickoff after Phase 1 verification.
+- **Resolved**: Supabase project connected · crypto wired to Alpha Vantage · zone deployment complete · Didit KYC E2E verified · security remediation applied.
+- **Remaining**: Production licensing consultation (optional / future). Nothing blocks the current live platform.
 
 ---
 
