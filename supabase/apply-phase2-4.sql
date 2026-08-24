@@ -195,7 +195,7 @@ begin
     raise exception 'Amount and rate must be positive';
   end if;
   if p_fee_rate < 0 or p_fee_rate > 0.1 then
-    raise exception 'Fee rate out of range (max 10%)';
+    raise exception 'Fee rate out of range (max 10%%)';
   end if;
 
   select * into v_from from public.accounts
